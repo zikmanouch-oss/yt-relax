@@ -1,10 +1,10 @@
 # Réglages de la chaîne — modifiables sans toucher au code.
 
-hours: 8                 # durée de chaque vidéo (heures)
+hours: 1                 # durée de chaque vidéo (heures)
 segment_minutes: 15      # longueur de la séquence vidéo avant qu'elle se répète
 clips_per_video: 8       # nombre de clips Pexels mélangés
 sounds_per_video: 5      # nombre d'enregistrements de pluie mélangés
-video_maxrate: 3M        # débit vidéo max (8 h ≈ 11 Go)
+video_maxrate: 3M        # débit vidéo max (1 h ≈ 1,4 Go)
 
 privacy: public          # public | unlisted | private
 category_id: 22          # 22 = People & Blogs, 10 = Music
