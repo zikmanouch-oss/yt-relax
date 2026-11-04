@@ -38,6 +38,7 @@ def main() -> None:
     ap.add_argument("--hours", type=float, default=None)
     ap.add_argument("--dry-run", action="store_true", help="génère sans publier")
     ap.add_argument("--out", default="out")
+    ap.add_argument("--theme", default=None, help="force une ambiance (ex. fireplace)")
     args = ap.parse_args()
 
     cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
@@ -45,6 +46,10 @@ def main() -> None:
     seconds = int(hours * 3600)
     history = load_history()
     variant = cfg["variants"][len(history) % len(cfg["variants"])]
+    if args.theme:
+        if args.theme not in cfg["themes"]:
+            raise SystemExit(f"Ambiance inconnue : {args.theme}")
+        variant = {"theme": args.theme, "thunder": False}
     theme, thunder = variant["theme"], bool(variant["thunder"])
     seed = int(time.time()) % 1_000_000
     rng = random.Random(seed)
@@ -74,7 +79,7 @@ def main() -> None:
     sounds = sources.freesound_sounds(rng.choice(tcfg["sound"]), int(cfg.get("sounds_per_video", 5)),
                                       assets, rng, avoid=avoid_sounds)
     if len(sounds) < 3:
-        sounds += sources.freesound_sounds("rain", 5 - len(sounds), assets, rng,
+        sounds += sources.freesound_sounds(tcfg.get("fallback_sound", "rain"), 5 - len(sounds), assets, rng,
                                            avoid=avoid_sounds | {s["id"] for s in sounds})
     thunders = []
     if thunder:
@@ -115,7 +120,10 @@ def main() -> None:
     if not upload.credentials_available():
         raise SystemExit("Identifiants YouTube absents (secrets YT_CLIENT_ID, YT_CLIENT_SECRET, YT_REFRESH_TOKEN).")
     Path(segment).unlink(missing_ok=True)
-    video_id = upload.upload(video, thumb, meta, cfg)
+    up_cfg = dict(cfg)
+    if "playlist" in tcfg:
+        up_cfg["playlist_id"] = tcfg["playlist"]
+    video_id = upload.upload(video, thumb, meta, up_cfg)
     history.append({
         "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "video_id": video_id,

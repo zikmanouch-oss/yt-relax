@@ -38,6 +38,47 @@ TITLES = {
 }
 THUNDER = " & Distant Thunder"
 
+# Ambiances hors pluie : titres, description, tags et hashtags propres.
+OTHER_TITLES = {
+    "fireplace": [
+        "Fireplace Sounds for Sleeping – {h} Hours of Crackling Fire ({y})",
+        "Crackling Fireplace for Deep Sleep & Relaxation – {h} Hours ({y})",
+        "Cozy Fireplace Ambience – {h} Hours of Crackling Fire for Sleep ({y})",
+    ],
+}
+OTHER_DESCRIPTION = {
+    "fireplace": """Fireplace sounds for sleeping: {h} hours of a warm, crackling fire to help you \
+fall asleep fast, relax deeply and feel cozy through the night.
+
+Let the soft crackle and pop of burning logs slow everything down. This is real fire sound, \
+with no music and no talking, so it works as calm background for sleep, insomnia, \
+studying, focus, reading, meditation or a cozy evening.
+
+🔥 Real crackling fireplace recordings
+🌙 {h} hours, uninterrupted: play it all night
+🎧 Best with headphones or a speaker at low volume
+📵 Tip: lower your screen brightness and let the fire play
+
+⏱️ Sleep timer
+{chapters}
+
+🔔 Subscribe to Calm Haven Sounds for new rain, fireplace, ocean and nature soundscapes every week.
+
+— Credits —
+Footage: {video_source} — {video_credits}
+Sounds: Freesound (freesound.org, CC0) — {sound_credits}
+
+#fireplace #sleepsounds #relaxing
+""",
+}
+OTHER_TAGS = {
+    "fireplace": [
+        "fireplace sounds", "fireplace sounds for sleeping", "crackling fire", "fireplace ambience",
+        "cozy fireplace", "fire sounds", "crackling fireplace", "sleep sounds", "relaxing sounds",
+        "deep sleep", "white noise", "insomnia", "study sounds", "relaxation", "calm haven sounds",
+    ],
+}
+
 SCENE = {
     "window": "gentle rain on a window",
     "forest": "gentle forest rain",
@@ -51,7 +92,8 @@ SCENE_LINE = {
     "roof": "Let the steady patter of rain on the roof wrap around you",
 }
 
-THUMB = {"window": "RAIN ON WINDOW", "forest": "FOREST RAIN", "lake": "RAIN ON THE LAKE", "roof": "RAIN ON ROOF"}
+THUMB = {"window": "RAIN ON WINDOW", "forest": "FOREST RAIN", "lake": "RAIN ON THE LAKE", "roof": "RAIN ON ROOF",
+         "fireplace": "COZY FIREPLACE"}
 
 HASHTAGS = {False: "#rainsounds #sleepsounds #relaxing", True: "#rainsounds #sleepsounds #thunderstorm"}
 
@@ -124,6 +166,17 @@ def build(theme: str, thunder: bool, hours: float, seed: int,
     rnd = random.Random(seed)
     h = f"{hours:g}"
     y = year or _dt.datetime.now(_dt.timezone.utc).year
+    if theme in OTHER_TITLES:
+        title = rnd.choice(OTHER_TITLES[theme]).format(h=h, y=y)
+        return {
+            "title": title[:100],
+            "description": OTHER_DESCRIPTION[theme].format(
+                h=h, chapters=chapters(hours), video_source=video_source,
+                video_credits=_names(clips), sound_credits=_names(sounds)),
+            "tags": OTHER_TAGS[theme] + [f"{theme} sounds for sleeping {y}", f"{theme} {h} hours"],
+            "thumb_line1": THUMB[theme],
+            "thumb_line2": f"DEEP SLEEP • {h} HOURS",
+        }
     title = rnd.choice(TITLES[theme]).format(h=h, t=THUNDER if thunder else "", y=y)
     if len(title) > 100:  # sans l'orage si trop long, jamais sans l'année
         title = rnd.choice(TITLES[theme]).format(h=h, t="", y=y)

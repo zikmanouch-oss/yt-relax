@@ -3,12 +3,12 @@
 hours: 8                 # durée de chaque vidéo (heures)
 segment_minutes: 15      # longueur de la séquence vidéo avant qu'elle se répète
 clips_per_video: 8       # nombre de clips vidéo mélangés
-sounds_per_video: 5      # nombre d'enregistrements de pluie mélangés
+sounds_per_video: 5      # nombre d'enregistrements mélangés
 video_maxrate: 3M        # débit vidéo max (8 h ≈ 11 Go)
 
 privacy: public          # public | unlisted | private
 category_id: 22          # 22 = People & Blogs, 10 = Music
-playlist_id: "PLbbqInyCAtYM" # playlist « Rain Sounds for Sleeping »
+playlist_id: "PLbbqInyCAtYM" # playlist pluie (ambiances sans « playlist » propre)
 
 # Clips à ne plus jamais utiliser (ID Pixabay, visibles dans metadata.json)
 blocked_clips: []
@@ -21,6 +21,7 @@ variants:
   - { theme: roof,   thunder: true }
   - { theme: window, thunder: true }
   - { theme: forest, thunder: false }
+  - { theme: fireplace, thunder: false }
 
 themes:
   window:
@@ -35,4 +36,9 @@ themes:
   roof:
     video: ["rain roof", "rain cabin", "rain puddle"]
     sound: ["rain on roof", "rain tin roof"]
+  fireplace:              # ambiance feu (hors rotation pluie, sans tonnerre)
+    video: ["fireplace", "fireplace fire", "burning logs fireplace"]
+    sound: ["fireplace crackling", "fire crackling", "crackling fire"]
+    fallback_sound: "fireplace"
+    playlist: ""          # playlist « feu » à créer ; vide = aucune
   thunder_sound: ["distant thunder", "thunder rumble"]

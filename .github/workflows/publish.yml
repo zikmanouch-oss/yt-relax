@@ -17,6 +17,10 @@ on:
         description: "Forcer la confidentialité (vide = config.yaml) : private | unlisted | public"
         type: string
         default: ""
+      theme:
+        description: "Forcer une ambiance (vide = rotation) : window, forest, lake, roof, fireplace"
+        type: string
+        default: ""
       task:
         description: "Tâche"
         type: choice
@@ -73,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 340
     concurrency:
-      group: publish
+      group: publish-${{ inputs.theme || 'rotation' }}
       cancel-in-progress: false
     env:
       YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -136,6 +140,7 @@ jobs:
           ARGS="--out out"
           [ -n "${{ steps.mode.outputs.hours }}" ] && ARGS="$ARGS --hours ${{ steps.mode.outputs.hours }}"
           [ "${{ steps.mode.outputs.mode }}" = "test" ] && ARGS="$ARGS --dry-run"
+          [ -n "${{ inputs.theme }}" ] && ARGS="$ARGS --theme ${{ inputs.theme }}"
           python -m src.main $ARGS
 
       - name: Extrait léger (2 min autour du raccord de boucle)
