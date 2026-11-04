@@ -40,5 +40,5 @@ themes:
     video: ["fireplace", "fireplace fire", "burning logs fireplace"]
     sound: ["fireplace crackling", "fire crackling", "crackling fire"]
     fallback_sound: "fireplace"
-    playlist: ""          # playlist « feu » à créer ; vide = aucune
+    playlist: "PLJQ4dxP4hw9M"  # playlist « Fireplace Sounds for Sleeping »
   thunder_sound: ["distant thunder", "thunder rumble"]
