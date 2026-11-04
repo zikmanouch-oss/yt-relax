@@ -20,7 +20,7 @@ on:
       task:
         description: "Tâche"
         type: choice
-        options: [video, branding]
+        options: [video, branding, status]
         default: video
       queries:
         description: "branding : recherches séparées par ;"
@@ -52,8 +52,24 @@ jobs:
           git diff --cached --quiet || git commit -m "Images candidates pour la chaîne"
           git push
 
+  status:
+    if: inputs.task == 'status'
+    runs-on: ubuntu-latest
+    env:
+      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q google-api-python-client google-auth
+      - name: État de la chaîne (lecture seule)
+        run: python scripts/channel_status.py
+
   publish:
-    if: inputs.task != 'branding'
+    if: inputs.task != 'branding' && inputs.task != 'status'
     runs-on: ubuntu-latest
     timeout-minutes: 340
     concurrency:
