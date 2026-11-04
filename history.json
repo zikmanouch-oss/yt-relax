@@ -35,5 +35,31 @@
     "thunder": true,
     "clip_ids": [],
     "sound_ids": []
+  },
+  {
+    "date": "2026-11-04T23:32:39+00:00",
+    "video_id": "sC3cIM9v7Cc",
+    "title": "Gentle Rain on Water for Deep Sleep – 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 832779,
+    "theme": "lake",
+    "thunder": false,
+    "clip_ids": [
+      129786,
+      150144,
+      113710,
+      81883,
+      181916,
+      282060,
+      185751,
+      141163
+    ],
+    "sound_ids": [
+      713355,
+      572429,
+      827832,
+      717551,
+      511116
+    ]
   }
 ]
