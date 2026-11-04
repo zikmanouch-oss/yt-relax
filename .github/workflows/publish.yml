@@ -29,11 +29,16 @@ jobs:
       YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
       YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
       YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+      FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
     steps:
       - name: Choisir le mode
         id: mode
         run: |
-          if [ "${{ inputs.dry_run }}" = "true" ]; then
+          if [ -z "$PIXABAY_API_KEY" ] || [ -z "$FREESOUND_API_KEY" ]; then
+            echo "mode=skip" >> "$GITHUB_OUTPUT"
+            echo "::warning::Secrets PIXABAY_API_KEY / FREESOUND_API_KEY manquants."
+          elif [ "${{ inputs.dry_run }}" = "true" ]; then
             echo "mode=test" >> "$GITHUB_OUTPUT"
             echo "hours=${{ inputs.hours || '0.05' }}" >> "$GITHUB_OUTPUT"
           elif [ -n "$YT_CLIENT_ID" ] && [ -n "$YT_CLIENT_SECRET" ] && [ -n "$YT_REFRESH_TOKEN" ]; then
@@ -60,6 +65,13 @@ jobs:
           sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
           pip install -q -r requirements.txt
 
+      - name: Préparer l'espace disque
+        if: steps.mode.outputs.mode != 'skip'
+        run: |
+          sudo mkdir -p /mnt/work && sudo chown "$USER" /mnt/work
+          ln -s /mnt/work out
+          df -h / /mnt
+
       - name: Générer (et publier)
         if: steps.mode.outputs.mode != 'skip'
         run: |
@@ -76,6 +88,7 @@ jobs:
           path: |
             out/video.mp4
             out/thumb.jpg
+            out/frame.png
             out/metadata.json
           retention-days: 3
 

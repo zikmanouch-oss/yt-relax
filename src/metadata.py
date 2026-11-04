@@ -4,59 +4,80 @@ from __future__ import annotations
 import random
 
 TITLES = {
-    "light": [
-        "Gentle Rain Sounds for Sleeping – {h} Hours of Soft Rain at Night",
-        "Soft Rain on the Window – {h} Hours for Deep Sleep & Relaxation",
-        "Light Rain Sounds for Sleep, Study & Calm – {h} Hours",
+    "window": [
+        "Rain on Window Sounds for Sleeping – {h} Hours of Relaxing Night Rain",
+        "Gentle Rain on the Window – {h} Hours to Fall Asleep Fast",
+        "Cozy Rainy Night by the Window – {h} Hours of Rain Sounds for Sleep",
     ],
-    "medium": [
-        "Rain Sounds for Sleeping – {h} Hours of Relaxing Rain at Night",
-        "Calming Rain on a Window – {h} Hours to Fall Asleep Fast",
-        "Steady Rain Sounds for Deep Sleep – {h} Hours, No Music",
+    "forest": [
+        "Rain in the Forest – {h} Hours of Nature Rain Sounds for Deep Sleep",
+        "Relaxing Forest Rain Sounds – {h} Hours for Sleep, Study & Calm",
+        "Soft Rain on Leaves – {h} Hours of Peaceful Forest Rain",
     ],
-    "heavy": [
-        "Heavy Rain Sounds for Sleeping – {h} Hours of Rainstorm at Night",
-        "Heavy Rain on the Window – {h} Hours for Insomnia & Deep Sleep",
-        "Strong Rain Sounds to Block Noise – {h} Hours for Sleep & Focus",
+    "city": [
+        "Rainy Night in the City – {h} Hours of Rain Sounds for Sleep",
+        "Calming City Rain at Night – {h} Hours to Relax and Fall Asleep",
+        "Rain on a Quiet Street – {h} Hours of Night Rain Ambience",
+    ],
+    "roof": [
+        "Rain on Roof Sounds for Sleeping – {h} Hours of Cozy Rain",
+        "Heavy Rain on a Roof – {h} Hours for Deep Sleep & Insomnia",
+        "Rain Sounds on a Cabin Roof – {h} Hours of Relaxing Rain",
     ],
 }
+THUNDER_SUFFIX = " & Distant Thunder"
 
-THUNDER_SUFFIX = " (with Distant Thunder)"
+THUMB = {"window": "RAIN ON WINDOW", "forest": "FOREST RAIN", "city": "CITY RAIN", "roof": "RAIN ON ROOF"}
 
 DESCRIPTION = """{title}
 
-Close your eyes and let the sound of the rain carry you to sleep. \
-This {h}-hour recording of {kind} rain is made to help you fall asleep, \
-relax, study, meditate or simply block out background noise.
+Close your eyes and let the rain carry you to sleep. {h} hours of real rain \
+ambience{thunder} to help you fall asleep, relax, study, meditate or block out \
+background noise.
 
 🌧️ No music, no talking — just rain.
 🎧 Best with headphones or a speaker at low volume.
-🔁 Perfect for sleep, babies, studying, reading, focus and calm.
+😴 For sleep, babies, studying, reading, focus and calm.
 
-The sounds and visuals of this video were created by our own sound engine.
+— Credits —
+Footage: {video_source} — {video_credits}
+Sounds: Freesound (freesound.org, CC0) — {sound_credits}
 
-#rainsounds #sleep #relaxing #whitenoise #rain
+#rainsounds #sleep #relaxing #rain #sleepsounds
 """
 
 TAGS = [
     "rain sounds", "rain sounds for sleeping", "sleep sounds", "relaxing rain",
-    "rain on window", "white noise", "deep sleep", "rain for sleep", "ambient rain",
-    "study sounds", "focus", "insomnia", "relaxation", "nature sounds", "sleep aid",
+    "rain ambience", "white noise", "deep sleep", "rain for sleep", "nature sounds",
+    "study sounds", "focus", "insomnia", "relaxation", "sleep aid", "rainy night",
 ]
+THEME_TAGS = {
+    "window": ["rain on window", "rain on glass"],
+    "forest": ["forest rain", "rain in the forest", "rain on leaves"],
+    "city": ["city rain", "rainy city night", "rain street"],
+    "roof": ["rain on roof", "rain on tin roof", "cabin rain"],
+}
 
 
-def build(intensity: str, thunder: bool, hours: float, seed: int) -> dict:
+def _names(items: list[dict]) -> str:
+    names = list(dict.fromkeys(i["author"] for i in items))
+    return ", ".join(names) if names else "—"
+
+
+def build(theme: str, thunder: bool, hours: float, seed: int,
+          clips: list[dict], sounds: list[dict], video_source: str = "Pixabay (pixabay.com)") -> dict:
     rnd = random.Random(seed)
     h = f"{hours:g}"
-    title = rnd.choice(TITLES[intensity]).format(h=h)
+    title = rnd.choice(TITLES[theme]).format(h=h)
     if thunder and len(title) + len(THUNDER_SUFFIX) <= 100:
         title += THUNDER_SUFFIX
-    kind = {"light": "gentle", "medium": "calming", "heavy": "heavy"}[intensity]
-    tags = TAGS + (["thunder sounds", "thunderstorm"] if thunder else [])
+    tags = TAGS + THEME_TAGS[theme] + (["thunder sounds", "thunderstorm"] if thunder else [])
     return {
         "title": title[:100],
-        "description": DESCRIPTION.format(title=title, h=h, kind=kind),
+        "description": DESCRIPTION.format(
+            title=title, h=h, thunder=" with distant thunder" if thunder else "",
+            video_source=video_source, video_credits=_names(clips), sound_credits=_names(sounds)),
         "tags": tags,
-        "thumb_line1": "RAIN SOUNDS",
-        "thumb_line2": f"{'Heavy Rain' if intensity == 'heavy' else 'Deep Sleep'} • {h} HOURS",
+        "thumb_line1": THUMB[theme],
+        "thumb_line2": f"{'& THUNDER • ' if thunder else 'DEEP SLEEP • '}{h} HOURS",
     }

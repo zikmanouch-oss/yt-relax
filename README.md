@@ -2,15 +2,15 @@
 
 Chaîne YouTube de sons de pluie, entièrement automatique et gratuite.
 
-- **Son** : pluie synthétisée par le code (`src/audio.py`) — aucun droit d'auteur, boucle sans coupure.
-- **Image** : scène de pluie nocturne générée (`src/visual.py`), miniature avec texte.
-- **Montage** : ffmpeg, image fixe + son (`src/render.py`).
+- **Vidéo** : vrais clips de pluie Pixabay (`src/sources.py`), enchaînés en fondus dans une séquence de 15 min qui boucle sans raccord visible (`src/footage.py`).
+- **Son** : vrais enregistrements CC0 de Freesound, mixés en continu avec variations d'intensité et tonnerre lointain, sans répétition sur 8 h (`src/soundscape.py`).
+- **Miniature** : image tirée de la vidéo + texte (`src/visual.py`).
 - **Publication** : API YouTube Data v3 (`src/upload.py`).
 - **Planning** : GitHub Actions, lundi / mercredi / vendredi (`.github/workflows/publish.yml`).
 
 ## Réglages
 
-Tout se règle dans `config.yaml` : durée, confidentialité, variantes (intensité, tonnerre).
+Tout se règle dans `config.yaml` : durée, ambiances (fenêtre, forêt, ville, toit), tonnerre, confidentialité.
 
 ## Lancer un test
 
@@ -21,11 +21,13 @@ Une vidéo de 3 minutes est générée et téléchargeable dans l'onglet du run 
 
 | Nom | Contenu |
 |---|---|
+| `PIXABAY_API_KEY` | Clé API Pixabay (vidéos) |
+| `FREESOUND_API_KEY` | Clé API Freesound (sons) |
 | `YT_CLIENT_ID` | ID client OAuth Google |
 | `YT_CLIENT_SECRET` | Secret client OAuth Google |
 | `YT_REFRESH_TOKEN` | Jeton d'actualisation de la chaîne |
 
-Tant que ces secrets sont absents, les publications planifiées sont simplement ignorées.
+Sans les clés Pixabay/Freesound rien ne tourne ; sans les clés YouTube, seul le mode test fonctionne.
 
 ## Local
 
