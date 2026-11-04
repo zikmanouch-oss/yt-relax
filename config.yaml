@@ -1,0 +1,17 @@
+# Réglages de la chaîne — modifiables sans toucher au code.
+
+hours: 8                 # durée de chaque vidéo (heures)
+loop_minutes: 10         # longueur de la boucle sonore générée
+fps: 2                   # image fixe : 2 images/s suffisent
+
+privacy: public          # public | unlisted | private
+category_id: 22          # 22 = People & Blogs, 10 = Music
+playlist_id: ""          # optionnel : ID d'une playlist YouTube
+
+# Les variantes tournent à chaque publication pour éviter les contenus répétitifs.
+variants:
+  - { intensity: medium, thunder: false }
+  - { intensity: heavy,  thunder: true }
+  - { intensity: light,  thunder: false }
+  - { intensity: heavy,  thunder: false }
+  - { intensity: medium, thunder: true }

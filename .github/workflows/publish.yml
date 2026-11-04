@@ -1,0 +1,89 @@
+name: Publier une vidéo pluie
+
+on:
+  schedule:
+    - cron: "17 18 * * 1,3,5"   # lundi, mercredi, vendredi à 18:17 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Mode test (génère sans publier)"
+        type: boolean
+        default: true
+      hours:
+        description: "Durée en heures (vide = config.yaml ; test = 0.05)"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    env:
+      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+    steps:
+      - name: Choisir le mode
+        id: mode
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "mode=test" >> "$GITHUB_OUTPUT"
+            echo "hours=${{ inputs.hours || '0.05' }}" >> "$GITHUB_OUTPUT"
+          elif [ -n "$YT_CLIENT_ID" ] && [ -n "$YT_CLIENT_SECRET" ] && [ -n "$YT_REFRESH_TOKEN" ]; then
+            echo "mode=publish" >> "$GITHUB_OUTPUT"
+            echo "hours=${{ inputs.hours }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=skip" >> "$GITHUB_OUTPUT"
+            echo "::notice::Identifiants YouTube pas encore configurés : publication ignorée."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.mode.outputs.mode != 'skip'
+
+      - uses: actions/setup-python@v5
+        if: steps.mode.outputs.mode != 'skip'
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Installer les outils
+        if: steps.mode.outputs.mode != 'skip'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          pip install -q -r requirements.txt
+
+      - name: Générer (et publier)
+        if: steps.mode.outputs.mode != 'skip'
+        run: |
+          ARGS="--out out"
+          [ -n "${{ steps.mode.outputs.hours }}" ] && ARGS="$ARGS --hours ${{ steps.mode.outputs.hours }}"
+          [ "${{ steps.mode.outputs.mode }}" = "test" ] && ARGS="$ARGS --dry-run"
+          python -m src.main $ARGS
+
+      - name: Aperçu du test
+        if: steps.mode.outputs.mode == 'test'
+        uses: actions/upload-artifact@v4
+        with:
+          name: apercu
+          path: |
+            out/video.mp4
+            out/thumb.jpg
+            out/metadata.json
+          retention-days: 3
+
+      - name: Enregistrer l'historique
+        if: steps.mode.outputs.mode == 'publish'
+        run: |
+          git config user.name "yt-relax-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add history.json
+          git diff --cached --quiet || git commit -m "Historique : nouvelle vidéo publiée"
+          git push
