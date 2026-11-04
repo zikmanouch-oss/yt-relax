@@ -29,16 +29,27 @@ def _client():
     return build("youtube", "v3", credentials=creds, cache_discovery=False)
 
 
+def _fit_tags(tags: list[str], limit: int = 450) -> list[str]:
+    """YouTube limite les tags à 500 caractères (guillemets comptés pour les tags à espaces)."""
+    out, total = [], 0
+    for t in dict.fromkeys(t.strip() for t in tags if t.strip()):
+        cost = len(t) + (2 if " " in t else 0) + 1
+        if total + cost > limit:
+            break
+        out.append(t)
+        total += cost
+    return out
+
+
 def upload(video: str, thumb: str, meta: dict, cfg: dict) -> str:
     yt = _client()
     body = {
         "snippet": {
             "title": meta["title"],
             "description": meta["description"],
-            "tags": meta["tags"],
+            "tags": _fit_tags(meta["tags"]),
             "categoryId": str(cfg.get("category_id", 22)),
             "defaultLanguage": "en",
-            "defaultAudioLanguage": "zxx",  # pas de langue parlée
         },
         "status": {
             "privacyStatus": os.environ.get("PRIVACY_OVERRIDE") or cfg.get("privacy", "public"),
