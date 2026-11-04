@@ -8,7 +8,7 @@ video_maxrate: 3M        # débit vidéo max (8 h ≈ 11 Go)
 
 privacy: public          # public | unlisted | private
 category_id: 22          # 22 = People & Blogs, 10 = Music
-playlist_id: ""          # optionnel : ID d'une playlist YouTube
+playlist_id: "PLbbqInyCAtYM" # playlist « Rain Sounds for Sleeping »
 
 # Clips à ne plus jamais utiliser (ID Pixabay, visibles dans metadata.json)
 blocked_clips: []
