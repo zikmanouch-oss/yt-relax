@@ -13,6 +13,10 @@ on:
         description: "Durée en heures (vide = config.yaml ; test = 0.05)"
         type: string
         default: ""
+      privacy:
+        description: "Forcer la confidentialité (vide = config.yaml) : private | unlisted | public"
+        type: string
+        default: ""
       task:
         description: "Tâche"
         type: choice
@@ -61,6 +65,7 @@ jobs:
       YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
       PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
       FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+      PRIVACY_OVERRIDE: ${{ inputs.privacy }}
     steps:
       - name: Choisir le mode
         id: mode

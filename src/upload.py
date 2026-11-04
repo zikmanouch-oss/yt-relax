@@ -41,7 +41,7 @@ def upload(video: str, thumb: str, meta: dict, cfg: dict) -> str:
             "defaultAudioLanguage": "zxx",  # pas de langue parlée
         },
         "status": {
-            "privacyStatus": cfg.get("privacy", "public"),
+            "privacyStatus": os.environ.get("PRIVACY_OVERRIDE") or cfg.get("privacy", "public"),
             "selfDeclaredMadeForKids": False,
         },
     }
