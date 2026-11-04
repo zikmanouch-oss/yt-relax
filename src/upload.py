@@ -54,6 +54,7 @@ def upload(video: str, thumb: str, meta: dict, cfg: dict) -> str:
         "status": {
             "privacyStatus": os.environ.get("PRIVACY_OVERRIDE") or cfg.get("privacy", "public"),
             "selfDeclaredMadeForKids": False,
+            "containsSyntheticMedia": False,
         },
     }
     media = MediaFileUpload(video, mimetype="video/mp4", chunksize=64 * 1024 * 1024, resumable=True)
