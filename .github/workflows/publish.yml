@@ -150,4 +150,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add history.json
           git diff --cached --quiet || git commit -m "Historique : nouvelle vidéo publiée"
-          git push
+          for i in 1 2 3; do
+            git pull --rebase -q origin main && git push && break
+            sleep 5
+          done
