@@ -110,13 +110,22 @@ jobs:
           [ "${{ steps.mode.outputs.mode }}" = "test" ] && ARGS="$ARGS --dry-run"
           python -m src.main $ARGS
 
+      - name: Extrait léger (2 min autour du raccord de boucle)
+        if: steps.mode.outputs.mode == 'test'
+        run: |
+          DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 out/video.mp4)
+          SEG=$(ffprobe -v error -show_entries format=duration -of csv=p=0 out/segment.mp4)
+          START=$(python3 -c "d=$DUR; s=$SEG; print(max(0, min(s - 60, d - 120)))")
+          ffmpeg -v error -y -ss "$START" -i out/video.mp4 -t 120 -c:v libx264 -preset veryfast -crf 28 -vf scale=1280:-2 -c:a aac -b:a 128k out/extrait.mp4
+          ls -lh out/extrait.mp4
+
       - name: Aperçu du test
         if: steps.mode.outputs.mode == 'test'
         uses: actions/upload-artifact@v4
         with:
           name: apercu
           path: |
-            out/video.mp4
+            out/extrait.mp4
             out/thumb.jpg
             out/frame.png
             out/metadata.json
