@@ -1,4 +1,10 @@
-# yt-relax
+# yt-relax — Calm Haven Uploader
+
+Internal upload tool for the **YouTube** channel [Calm Haven Sounds](https://www.youtube.com/channel/UC5TLLkK5ytg4wTOEYdFcf2Q), built on the YouTube API Services.
+
+**[Privacy Policy](PRIVACY.md)** · **[Terms of Use](TERMS.md)** · [YouTube Terms of Service](https://www.youtube.com/t/terms) · [Google Privacy Policy](https://policies.google.com/privacy)
+
+---
 
 Chaîne YouTube de sons de pluie, entièrement automatique et gratuite.
 
