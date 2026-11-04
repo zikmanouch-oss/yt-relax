@@ -14,6 +14,14 @@ import requests
 
 UA = {"User-Agent": "yt-relax/1.0"}
 
+# Mots-clés qui signalent souvent des logos, enseignes, textes ou personnes à l'image.
+BANNED_TAGS = {
+    "city", "cityscape", "building", "buildings", "skyscraper", "skyline", "urban", "downtown",
+    "neon", "sign", "signs", "advertising", "advertisement", "billboard", "logo", "brand", "text",
+    "shop", "store", "restaurant", "cafe", "street", "traffic", "car", "cars", "taxi", "bus",
+    "people", "person", "man", "woman", "girl", "boy", "child", "crowd", "umbrella", "face",
+}
+
 
 def _get(url: str, **kw) -> requests.Response:
     for attempt in range(4):
@@ -43,13 +51,17 @@ def _download(url: str, dest: Path, headers: dict | None = None) -> Path:
 # --------------------------------------------------------------- Pixabay
 
 def pixabay_clips(query: str, count: int, dest: Path, rng: random.Random,
-                  avoid: set[int] = frozenset()) -> list[dict]:
+                  avoid: set[int] = frozenset(), blocked: set[int] = frozenset()) -> list[dict]:
     key = os.environ["PIXABAY_API_KEY"]
     r = _get("https://pixabay.com/api/videos/", params={
         "key": key, "q": query, "per_page": 200, "safesearch": "true", "order": "popular"})
     found = []
     for v in r.json().get("hits", []):
-        if v.get("duration", 0) < 8:
+        if v.get("duration", 0) < 8 or v["id"] in blocked:
+            continue
+        tags = {t.strip().lower() for t in v.get("tags", "").split(",")}
+        words = {w for t in tags for w in t.split()}
+        if (tags | words) & BANNED_TAGS:
             continue
         vids = v.get("videos", {})
         # « medium » = 1920×1080 en général ; sinon « large » (souvent 4K)
@@ -72,11 +84,11 @@ def pixabay_clips(query: str, count: int, dest: Path, rng: random.Random,
 
 
 def video_clips(query: str, count: int, dest: Path, rng: random.Random,
-                avoid: set[int] = frozenset()) -> list[dict]:
+                avoid: set[int] = frozenset(), blocked: set[int] = frozenset()) -> list[dict]:
     """Utilise Pixabay si la clé existe, sinon Pexels."""
     if os.environ.get("PIXABAY_API_KEY"):
-        return pixabay_clips(query, count, dest, rng, avoid)
-    return pexels_clips(query, count, dest, rng, avoid)
+        return pixabay_clips(query, count, dest, rng, avoid, blocked)
+    return [c for c in pexels_clips(query, count, dest, rng, avoid | blocked)]
 
 
 # ---------------------------------------------------------------- Pexels

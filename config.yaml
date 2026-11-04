@@ -2,7 +2,7 @@
 
 hours: 8                 # durée de chaque vidéo (heures)
 segment_minutes: 15      # longueur de la séquence vidéo avant qu'elle se répète
-clips_per_video: 8       # nombre de clips Pexels mélangés
+clips_per_video: 8       # nombre de clips vidéo mélangés
 sounds_per_video: 5      # nombre d'enregistrements de pluie mélangés
 video_maxrate: 3M        # débit vidéo max (8 h ≈ 11 Go)
 
@@ -10,25 +10,28 @@ privacy: public          # public | unlisted | private
 category_id: 22          # 22 = People & Blogs, 10 = Music
 playlist_id: ""          # optionnel : ID d'une playlist YouTube
 
+# Clips à ne plus jamais utiliser (ID Pixabay, visibles dans metadata.json)
+blocked_clips: []
+
 # Les ambiances tournent à chaque publication.
 variants:
   - { theme: window, thunder: false }
   - { theme: forest, thunder: true }
-  - { theme: city,   thunder: false }
+  - { theme: lake,   thunder: false }
   - { theme: roof,   thunder: true }
   - { theme: window, thunder: true }
   - { theme: forest, thunder: false }
 
 themes:
   window:
-    video: ["rain on window", "raindrops window night", "rain glass"]
+    video: ["raindrops window", "rain drops glass", "rain window"]
     sound: ["rain window", "rain on glass"]
   forest:
     video: ["rain forest", "rain leaves", "rainy jungle"]
     sound: ["rain forest", "rain leaves"]
-  city:
-    video: ["rainy city night", "rain street night", "rain neon"]
-    sound: ["rain city", "rain street"]
+  lake:
+    video: ["rain on water", "rain lake", "rain pond drops"]
+    sound: ["rain on water", "rain lake"]
   roof:
     video: ["rain roof", "rain cabin", "rain puddle"]
     sound: ["rain on roof", "rain tin roof"]

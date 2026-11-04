@@ -53,6 +53,7 @@ def main() -> None:
     recent = history[-6:]
     avoid_clips = {i for h in recent for i in h.get("clip_ids", [])}
     avoid_sounds = {i for h in recent for i in h.get("sound_ids", [])}
+    blocked = {int(i) for i in cfg.get("blocked_clips") or []}
 
     out = Path(args.out)
     assets = out / "assets"
@@ -62,10 +63,14 @@ def main() -> None:
     # 1. Médias réels
     tcfg = cfg["themes"][theme]
     n_clips = int(cfg.get("clips_per_video", 8))
-    clips = sources.video_clips(rng.choice(tcfg["video"]), n_clips, assets, rng, avoid_clips)
-    if len(clips) < 4:
-        clips += sources.video_clips(rng.choice(tcfg["video"]), n_clips - len(clips), assets, rng,
-                                     avoid_clips | {c["id"] for c in clips})
+    clips = sources.video_clips(rng.choice(tcfg["video"]), n_clips, assets, rng, avoid_clips, blocked)
+    for q in tcfg["video"]:
+        if len(clips) >= 4:
+            break
+        clips += sources.video_clips(q, n_clips - len(clips), assets, rng,
+                                     avoid_clips | {c["id"] for c in clips}, blocked)
+    if len(clips) < 3:
+        raise SystemExit("Pas assez de clips vidéo exploitables.")
     sounds = sources.freesound_sounds(rng.choice(tcfg["sound"]), int(cfg.get("sounds_per_video", 5)),
                                       assets, rng, avoid=avoid_sounds)
     if len(sounds) < 3:
@@ -91,6 +96,7 @@ def main() -> None:
     # 4. Miniature + textes
     frame = footage.frame(segment, rng.uniform(5, max(6, loop_len - 5)), str(out / "frame.png"))
     meta = metadata.build(theme, thunder, hours, seed, clips, sounds + thunders)
+    meta["clips"] = [{"id": c["id"], "page": c.get("page", "")} for c in clips]
     thumb = str(out / "thumb.jpg")
     visual.thumbnail(frame, meta["thumb_line1"], meta["thumb_line2"], thumb)
     (out / "metadata.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")

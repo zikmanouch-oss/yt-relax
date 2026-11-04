@@ -14,10 +14,10 @@ TITLES = {
         "Relaxing Forest Rain Sounds – {h} Hours for Sleep, Study & Calm",
         "Soft Rain on Leaves – {h} Hours of Peaceful Forest Rain",
     ],
-    "city": [
-        "Rainy Night in the City – {h} Hours of Rain Sounds for Sleep",
-        "Calming City Rain at Night – {h} Hours to Relax and Fall Asleep",
-        "Rain on a Quiet Street – {h} Hours of Night Rain Ambience",
+    "lake": [
+        "Rain on a Calm Lake – {h} Hours of Soothing Rain Sounds for Sleep",
+        "Gentle Rain on Water – {h} Hours to Relax and Fall Asleep",
+        "Peaceful Rain Over a Pond – {h} Hours of Nature Rain Ambience",
     ],
     "roof": [
         "Rain on Roof Sounds for Sleeping – {h} Hours of Cozy Rain",
@@ -27,7 +27,7 @@ TITLES = {
 }
 THUNDER_SUFFIX = " & Distant Thunder"
 
-THUMB = {"window": "RAIN ON WINDOW", "forest": "FOREST RAIN", "city": "CITY RAIN", "roof": "RAIN ON ROOF"}
+THUMB = {"window": "RAIN ON WINDOW", "forest": "FOREST RAIN", "lake": "RAIN ON THE LAKE", "roof": "RAIN ON ROOF"}
 
 DESCRIPTION = """{title}
 
@@ -54,7 +54,7 @@ TAGS = [
 THEME_TAGS = {
     "window": ["rain on window", "rain on glass"],
     "forest": ["forest rain", "rain in the forest", "rain on leaves"],
-    "city": ["city rain", "rainy city night", "rain street"],
+    "lake": ["rain on water", "rain on lake", "pond rain"],
     "roof": ["rain on roof", "rain on tin roof", "cabin rain"],
 }
 
