@@ -10,4 +10,4 @@ Calm Haven Uploader is a private tool used only by the owner of the YouTube chan
 - The tool uses YouTube API Services; see the Google Privacy Policy: https://policies.google.com/privacy
   and the YouTube Terms of Service: https://www.youtube.com/t/terms
 
-Contact: zikmanouch@gmail.com
+Contact: through the "Calm Haven Sounds" YouTube channel page.
