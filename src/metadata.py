@@ -175,7 +175,7 @@ def build(theme: str, thunder: bool, hours: float, seed: int,
                 video_credits=_names(clips), sound_credits=_names(sounds)),
             "tags": OTHER_TAGS[theme] + [f"{theme} sounds for sleeping {y}", f"{theme} {h} hours"],
             "thumb_line1": THUMB[theme],
-            "thumb_line2": f"DEEP SLEEP • {h} HOURS",
+            "thumb_line2": f"DEEP SLEEP • {h} HOURS" if hours >= 1 else "DEEP SLEEP",
         }
     title = rnd.choice(TITLES[theme]).format(h=h, t=THUNDER if thunder else "", y=y)
     if len(title) > 100:  # sans l'orage si trop long, jamais sans l'année
@@ -196,5 +196,6 @@ def build(theme: str, thunder: bool, hours: float, seed: int,
             hashtags=HASHTAGS[thunder]),
         "tags": tags,
         "thumb_line1": THUMB[theme],
-        "thumb_line2": f"{'& THUNDER • ' if thunder else 'DEEP SLEEP • '}{h} HOURS",
+        "thumb_line2": (f"{'& THUNDER • ' if thunder else 'DEEP SLEEP • '}{h} HOURS" if hours >= 1
+                        else ("& THUNDER" if thunder else "DEEP SLEEP")),
     }
