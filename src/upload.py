@@ -58,7 +58,11 @@ def upload(video: str, thumb: str, meta: dict, cfg: dict) -> str:
         },
     }
     media = MediaFileUpload(video, mimetype="video/mp4", chunksize=64 * 1024 * 1024, resumable=True)
-    req = yt.videos().insert(part="snippet,status", body=body, media_body=media)
+    parts = "snippet,status"
+    if meta.get("localizations"):
+        body["localizations"] = meta["localizations"]
+        parts += ",localizations"
+    req = yt.videos().insert(part=parts, body=body, media_body=media)
 
     response, retries = None, 0
     while response is None:

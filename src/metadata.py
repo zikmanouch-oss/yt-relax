@@ -299,3 +299,89 @@ def add_links(description: str, theme: str, playlist_id: str | None) -> str:
     if not new or SUBSCRIBE_ANCHOR not in description:
         return description
     return description.replace(SUBSCRIBE_ANCHOR, SUBSCRIBE_ANCHOR + "\n" + "\n".join(new), 1)
+
+
+# ---------------------------------------------------------------- arabe
+# Traductions affichées aux spectateurs arabophones (localizations YouTube « ar »).
+AR_TITLES = {
+    "window": "صوت المطر على النافذة للنوم{b} – {h}{t} ({y})",
+    "forest": "صوت المطر في الغابة للنوم العميق{b} – {h}{t} ({y})",
+    "lake": "صوت المطر على البحيرة للنوم{b} – {h}{t} ({y})",
+    "roof": "صوت المطر على السقف للنوم{b} – {h}{t} ({y})",
+    "fireplace": "صوت المدفأة وطقطقة الحطب للنوم{b} – {h}{t} ({y})",
+    "ocean": "صوت أمواج البحر للنوم العميق{b} – {h}{t} ({y})",
+}
+AR_LEAD = {"fireplace": "صوت المدفأة للنوم", "ocean": "صوت أمواج البحر للنوم"}
+AR_SCENE = {
+    "window": "المطر الهادئ على زجاج النافذة",
+    "forest": "المطر الهادئ في الغابة",
+    "lake": "المطر الخفيف على بحيرة هادئة",
+    "roof": "المطر على سقف كوخ دافئ",
+    "fireplace": "نار دافئة وطقطقة الحطب",
+    "ocean": "أمواج البحر الهادئة على الشاطئ",
+}
+AR_HASHTAGS = {
+    "rain": "#أصوات_المطر #صوت_المطر_للنوم #نوم_عميق",
+    "fireplace": "#صوت_المدفأة #أصوات_للنوم #استرخاء",
+    "ocean": "#صوت_البحر #أصوات_للنوم #استرخاء",
+}
+AR_DESCRIPTION = """{lead}: {hh} من {scene}{thunder} لتساعدك على النوم بسرعة، والنوم بعمق طوال الليل، وتهدئة أفكارك.
+
+أصوات حقيقية من الطبيعة، بدون موسيقى وبدون كلام، مناسبة للنوم والأرق والدراسة والتركيز والقراءة والتأمل.
+
+🌙 {hh} متواصلة: شغّله طوال الليل
+🎧 يُفضّل استخدام سماعات أو مكبر صوت بصوت منخفض
+🚫 بدون إعلانات في منتصف الفيديو: لا شيء يقطع نومك
+{black_line}
+⏱️ مؤقت النوم
+{chapters}
+
+🔔 اشترك في Calm Haven Sounds لمزيد من أصوات المطر والمدفأة والبحر والطبيعة كل أسبوع.
+{links}
+
+المصادر: Pixabay (فيديو) — Freesound (أصوات CC0)
+
+{hashtags}
+"""
+
+
+def _ar_hours(hours: float) -> str:
+    h = f"{hours:g}"
+    if hours == 1:
+        return "ساعة واحدة"
+    if hours == 2:
+        return "ساعتان"
+    if 3 <= hours <= 10 and float(hours).is_integer():
+        return f"{h} ساعات"
+    return f"{h} ساعة"
+
+
+def _ar_chapters(hours: float) -> str:
+    total = int(hours * 3600)
+    marks = [(0, "البداية")]
+    if total >= 45 * 60:
+        marks.append((30 * 60, "30 دقيقة"))
+    for k in range(1, int(hours) + 1):
+        if k * 3600 <= total - 600:
+            marks.append((k * 3600, f"الساعة {k}"))
+    if len(marks) < 3:
+        return "شغّل الفيديو واتركه يعمل."
+    return "\n".join(f"{_ts(t)} {label}" for t, label in marks)
+
+
+def arabic(theme: str, thunder: bool, hours: float, black: bool, playlist_id: str | None,
+           year: int | None = None) -> dict:
+    y = year or _dt.datetime.now(_dt.timezone.utc).year
+    hh = _ar_hours(hours)
+    title = AR_TITLES[theme].format(b="، شاشة سوداء" if black else "", h=hh,
+                                    t=" مع رعد بعيد" if thunder else "", y=y)
+    kind = {"fireplace": "fireplace", "ocean": "ocean"}.get(theme, "rain")
+    links = [f"👉 اشترك: {CHANNEL_URL}?sub_confirmation=1"]
+    if playlist_id:
+        links.append(f"📂 المزيد: https://www.youtube.com/playlist?list={playlist_id}")
+    desc = AR_DESCRIPTION.format(
+        lead=AR_LEAD.get(theme, "أصوات المطر للنوم"), hh=hh, scene=AR_SCENE[theme],
+        thunder=" مع رعد خفيف بعيد" if thunder else "",
+        black_line="⬛ شاشة سوداء: لا ضوء يوقظك، فقط الصوت\n" if black else "",
+        chapters=_ar_chapters(hours), links="\n".join(links), hashtags=AR_HASHTAGS[kind])
+    return {"title": title[:100], "description": desc}

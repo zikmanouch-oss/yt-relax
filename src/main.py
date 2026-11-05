@@ -111,6 +111,7 @@ def main() -> None:
     meta = metadata.build(theme, thunder, hours, seed, clips, sounds + thunders, black=black)
     playlist_for_theme = tcfg["playlist"] if "playlist" in tcfg else cfg.get("playlist_id")
     meta["description"] = metadata.add_links(meta["description"], theme, playlist_for_theme)
+    meta["localizations"] = {"ar": metadata.arabic(theme, thunder, hours, black, playlist_for_theme)}
     meta["clips"] = [{"id": c["id"], "page": c.get("page", "")} for c in clips]
     thumb = str(out / "thumb.jpg")
     visual.thumbnail(frame, meta["thumb_line1"], meta["thumb_line2"], thumb)
