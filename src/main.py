@@ -124,7 +124,7 @@ def main() -> None:
     if "playlist" in tcfg:
         up_cfg["playlist_id"] = tcfg["playlist"]
     video_id = upload.upload(video, thumb, meta, up_cfg)
-    history.append({
+    entry = {
         "date": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "video_id": video_id,
         "title": meta["title"],
@@ -134,7 +134,9 @@ def main() -> None:
         "thunder": thunder,
         "clip_ids": [c["id"] for c in clips],
         "sound_ids": [s["id"] for s in sounds],
-    })
+    }
+    (out / "history_entry.json").write_text(json.dumps(entry, ensure_ascii=False, indent=2), encoding="utf-8")
+    history.append(entry)
     HISTORY.write_text(json.dumps(history, ensure_ascii=False, indent=2), encoding="utf-8")
     step("Terminé", t0)
 

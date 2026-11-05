@@ -61,5 +61,27 @@
       717551,
       511116
     ]
+  },
+  {
+    "date": "2026-11-05T00:03:00+00:00",
+    "video_id": "6uZCNnCJWc0",
+    "title": "Peaceful Lake Rain Sounds – 8 Hours to Relax & Fall Asleep (2026)",
+    "hours": 8.0,
+    "seed": 835195,
+    "theme": "lake",
+    "thunder": false,
+    "clip_ids": [],
+    "sound_ids": []
+  },
+  {
+    "date": "2026-11-05T00:42:00+00:00",
+    "video_id": "g7XB5OEVia4",
+    "title": "Crackling Fireplace for Deep Sleep & Relaxation – 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 833329,
+    "theme": "fireplace",
+    "thunder": false,
+    "clip_ids": [],
+    "sound_ids": []
   }
 ]
