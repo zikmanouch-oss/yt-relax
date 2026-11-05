@@ -20,6 +20,8 @@ BANNED_TAGS = {
     "neon", "sign", "signs", "advertising", "advertisement", "billboard", "logo", "brand", "text",
     "shop", "store", "restaurant", "cafe", "street", "traffic", "car", "cars", "taxi", "bus",
     "people", "person", "man", "woman", "girl", "boy", "child", "crowd", "umbrella", "face",
+    "cat", "cats", "kitten", "dog", "dogs", "puppy", "pet", "pets", "animal", "animals",
+    "christmas", "santa", "gift", "gifts", "stocking", "candle", "candles", "tv", "television",
 }
 
 
@@ -79,7 +81,7 @@ def pixabay_clips(query: str, count: int, dest: Path, rng: random.Random,
     dest.mkdir(parents=True, exist_ok=True)
     for c in chosen:
         c["path"] = str(_download(c["url"], dest / f"pixabay_{c['id']}.mp4"))
-    print(f"Pixabay « {query} » : {len(chosen)} clips", flush=True)
+    print(f"Pixabay « {query} » : {len(chosen)} clips — IDs {[c['id'] for c in chosen]}", flush=True)
     return chosen
 
 
