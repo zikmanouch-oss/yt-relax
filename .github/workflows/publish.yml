@@ -32,7 +32,7 @@ on:
       task:
         description: "Tâche"
         type: choice
-        options: [video, branding, status, playlist_add]
+        options: [video, branding, status, playlist_add, noads]
         default: video
       queries:
         description: "branding : recherches séparées par ; — playlist_add : « VIDEO_ID PLAYLIST_ID »"
@@ -65,7 +65,7 @@ jobs:
           git push
 
   status:
-    if: inputs.task == 'status' || inputs.task == 'playlist_add'
+    if: inputs.task == 'status' || inputs.task == 'playlist_add' || inputs.task == 'noads'
     runs-on: ubuntu-latest
     env:
       YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -77,6 +77,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q google-api-python-client google-auth
+      - name: Ajouter « No mid-roll ads » aux descriptions existantes
+        if: inputs.task == 'noads'
+        run: python scripts/add_noads_line.py
       - name: Ajouter une vidéo à une playlist
         if: inputs.task == 'playlist_add'
         run: python scripts/playlist_add.py ${{ inputs.queries }}
@@ -84,7 +87,7 @@ jobs:
         run: python scripts/channel_status.py
 
   publish:
-    if: inputs.task != 'branding' && inputs.task != 'status' && inputs.task != 'playlist_add'
+    if: inputs.task == 'video' || inputs.task == ''
     runs-on: ubuntu-latest
     timeout-minutes: 340
     concurrency:

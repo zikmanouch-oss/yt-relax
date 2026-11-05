@@ -62,6 +62,7 @@ studying, focus, reading, meditation or soothing a baby.
 🌊 Real ocean wave recordings
 🌙 {h} hours, uninterrupted: play it all night
 🎧 Best with headphones or a speaker at low volume
+🚫 No mid-roll ads: nothing will interrupt your sleep
 📵 Tip: lower your screen brightness and let the waves play
 
 ⏱️ Sleep timer
@@ -85,6 +86,7 @@ studying, focus, reading, meditation or a cozy evening.
 🔥 Real crackling fireplace recordings
 🌙 {h} hours, uninterrupted: play it all night
 🎧 Best with headphones or a speaker at low volume
+🚫 No mid-roll ads: nothing will interrupt your sleep
 📵 Tip: lower your screen brightness and let the fire play
 
 ⏱️ Sleep timer
@@ -140,6 +142,7 @@ meditation or soothing a baby.
 🌧️ Real rain recordings{thunder_bullet}
 🌙 {h} hours, uninterrupted: play it all night
 🎧 Best with headphones or a speaker at low volume
+🚫 No mid-roll ads: nothing will interrupt your sleep
 📵 Tip: lower your screen brightness and let the sound play
 
 ⏱️ Sleep timer
