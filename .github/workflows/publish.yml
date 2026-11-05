@@ -32,7 +32,7 @@ on:
       task:
         description: "Tâche"
         type: choice
-        options: [video, branding, status, playlist_add, noads, links, arabic]
+        options: [video, branding, status, playlist_add, noads, links, arabic, fixlang]
         default: video
       queries:
         description: "branding : recherches séparées par ; — playlist_add : « VIDEO_ID PLAYLIST_ID »"
@@ -65,7 +65,7 @@ jobs:
           git push
 
   status:
-    if: inputs.task == 'status' || inputs.task == 'playlist_add' || inputs.task == 'noads' || inputs.task == 'links' || inputs.task == 'arabic'
+    if: inputs.task == 'status' || inputs.task == 'playlist_add' || inputs.task == 'noads' || inputs.task == 'links' || inputs.task == 'arabic' || inputs.task == 'fixlang'
     runs-on: ubuntu-latest
     env:
       YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -77,6 +77,9 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q google-api-python-client google-auth
+      - name: Langue audio « Non applicable »
+        if: inputs.task == 'fixlang'
+        run: python scripts/fix_audio_lang.py
       - name: Ajouter la traduction arabe aux vidéos existantes
         if: inputs.task == 'arabic'
         run: |
