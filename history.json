@@ -83,5 +83,32 @@
     "thunder": false,
     "clip_ids": [],
     "sound_ids": []
+  },
+  {
+    "date": "2026-11-05T08:28:54+00:00",
+    "video_id": "iW6J_yuMt5s",
+    "title": "Heavy Rain on a Tin Roof for Deep Sleep – 8 Hours & Distant Thunder (2026)",
+    "hours": 8.0,
+    "seed": 864322,
+    "theme": "roof",
+    "thunder": true,
+    "black": false,
+    "clip_ids": [
+      325314,
+      141072,
+      213923,
+      136232,
+      183922,
+      270035,
+      245694,
+      257953
+    ],
+    "sound_ids": [
+      149244,
+      607074,
+      482996,
+      265119,
+      844678
+    ]
   }
 ]
