@@ -85,6 +85,7 @@ jobs:
         run: |
           pip install -q PyYAML
           python scripts/add_arabic.py
+          python scripts/arabic_preview.py
       - name: Ajouter les liens chaîne/playlist aux descriptions existantes
         if: inputs.task == 'links'
         run: |
