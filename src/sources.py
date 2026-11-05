@@ -24,6 +24,9 @@ BANNED_TAGS = {
     "christmas", "santa", "gift", "gifts", "stocking", "candle", "candles", "tv", "television",
     "surf", "surfer", "surfing", "boat", "boats", "ship", "yacht", "swimming", "swimmer", "bikini",
     "drone", "aerial", "sunbathing", "tourist", "tourists", "resort", "hotel",
+    # images de synthèse : la chaîne déclare « pas de contenu IA »
+    "ai", "ai generated", "ai-generated", "generated", "artificial intelligence", "3d", "3d render",
+    "render", "rendering", "cgi", "digital art", "illustration", "animation", "animated", "cartoon",
 }
 
 
@@ -65,7 +68,7 @@ def pixabay_clips(query: str, count: int, dest: Path, rng: random.Random,
             continue
         tags = {t.strip().lower() for t in v.get("tags", "").split(",")}
         words = {w for t in tags for w in t.split()}
-        if (tags | words) & BANNED_TAGS:
+        if (tags | words) & BANNED_TAGS or v.get("type") in ("animation",):
             continue
         vids = v.get("videos", {})
         # « medium » = 1920×1080 en général ; sinon « large » (souvent 4K)
