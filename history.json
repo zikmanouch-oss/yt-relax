@@ -110,5 +110,26 @@
       265119,
       844678
     ]
+  },
+  {
+    "date": "2026-11-05T08:51:16+00:00",
+    "video_id": "e980Lad7m0c",
+    "title": "Rain on Window Sounds for Sleeping – Black Screen, 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 867478,
+    "theme": "window",
+    "thunder": false,
+    "black": true,
+    "clip_ids": [
+      119012,
+      86014
+    ],
+    "sound_ids": [
+      215576,
+      548496,
+      515940,
+      324499,
+      569313
+    ]
   }
 ]
