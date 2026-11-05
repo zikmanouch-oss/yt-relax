@@ -46,7 +46,35 @@ OTHER_TITLES = {
         "Cozy Fireplace Ambience – {h} Hours of Crackling Fire for Sleep ({y})",
     ],
 }
+OTHER_TITLES["ocean"] = [
+    "Ocean Waves Sounds for Sleeping – {h} Hours of Gentle Sea Waves ({y})",
+    "Ocean Sounds for Deep Sleep – {h} Hours of Calm Waves on the Shore ({y})",
+    "Relaxing Ocean Waves for Sleep, Study & Calm – {h} Hours ({y})",
+]
 OTHER_DESCRIPTION = {
+    "ocean": """Ocean waves sounds for sleeping: {h} hours of gentle sea waves rolling onto the shore to help you \
+fall asleep fast, sleep deeply through the night and quiet a busy mind.
+
+Let the slow rhythm of the waves on the beach carry you away. This is real ocean sound, \
+with no music and no talking, so it works as calm background for sleep, insomnia, \
+studying, focus, reading, meditation or soothing a baby.
+
+🌊 Real ocean wave recordings
+🌙 {h} hours, uninterrupted: play it all night
+🎧 Best with headphones or a speaker at low volume
+📵 Tip: lower your screen brightness and let the waves play
+
+⏱️ Sleep timer
+{chapters}
+
+🔔 Subscribe to Calm Haven Sounds for new rain, fireplace, ocean and nature soundscapes every week.
+
+— Credits —
+Footage: {video_source} — {video_credits}
+Sounds: Freesound (freesound.org, CC0) — {sound_credits}
+
+#oceanwaves #sleepsounds #relaxing
+""",
     "fireplace": """Fireplace sounds for sleeping: {h} hours of a warm, crackling fire to help you \
 fall asleep fast, relax deeply and feel cozy through the night.
 
@@ -72,6 +100,11 @@ Sounds: Freesound (freesound.org, CC0) — {sound_credits}
 """,
 }
 OTHER_TAGS = {
+    "ocean": [
+        "ocean waves", "ocean waves sounds for sleeping", "ocean sounds", "sea waves", "waves sounds",
+        "beach waves", "ocean waves for sleep", "sleep sounds", "relaxing sounds", "deep sleep",
+        "white noise", "insomnia", "study sounds", "relaxation", "calm haven sounds",
+    ],
     "fireplace": [
         "fireplace sounds", "fireplace sounds for sleeping", "crackling fire", "fireplace ambience",
         "cozy fireplace", "fire sounds", "crackling fireplace", "sleep sounds", "relaxing sounds",
@@ -93,7 +126,7 @@ SCENE_LINE = {
 }
 
 THUMB = {"window": "RAIN ON WINDOW", "forest": "FOREST RAIN", "lake": "RAIN ON THE LAKE", "roof": "RAIN ON ROOF",
-         "fireplace": "COZY FIREPLACE"}
+         "fireplace": "COZY FIREPLACE", "ocean": "OCEAN WAVES"}
 
 HASHTAGS = {False: "#rainsounds #sleepsounds #relaxing", True: "#rainsounds #sleepsounds #thunderstorm"}
 
@@ -166,6 +199,7 @@ BLACK_TITLES = {
     "lake": "Rain on a Lake Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
     "roof": "Rain on Roof Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
     "fireplace": "Fireplace Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
+    "ocean": "Ocean Waves Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
 }
 
 
@@ -178,11 +212,13 @@ def _blackify(d: dict, theme: str, thunder: bool, hours: float, y: int) -> dict:
     desc = d["description"]
     desc = desc.replace("Rain sounds for sleeping: ", "Rain sounds for sleeping with a black screen: ", 1)
     desc = desc.replace("Fireplace sounds for sleeping: ", "Fireplace sounds for sleeping with a black screen: ", 1)
+    desc = desc.replace("Ocean waves sounds for sleeping: ", "Ocean waves sounds for sleeping with a black screen: ", 1)
     for tip in ("📵 Tip: lower your screen brightness and let the sound play",
-                "📵 Tip: lower your screen brightness and let the fire play"):
+                "📵 Tip: lower your screen brightness and let the fire play",
+                "📵 Tip: lower your screen brightness and let the waves play"):
         desc = desc.replace(tip, "⬛ Black screen: no light to keep you awake, just the sound")
     desc = desc.replace("Footage: ", "Thumbnail image: ", 1)
-    kind = "fireplace" if theme == "fireplace" else "rain"
+    kind = {"fireplace": "fireplace", "ocean": "ocean"}.get(theme, "rain")
     tags = [t for t in d["tags"] if "hours" not in t][:16] + [
         "black screen", f"{kind} sounds black screen", f"{kind} sounds for sleeping black screen",
         "dark screen sleep sounds"]

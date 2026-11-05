@@ -21,6 +21,7 @@ variants:
   - { theme: roof,   thunder: true }
   - { theme: window, thunder: true }
   - { theme: forest, thunder: false }
+  - { theme: ocean,  thunder: false }
   - { theme: fireplace, thunder: false }
 
 themes:
@@ -41,4 +42,9 @@ themes:
     sound: ["fireplace crackling", "fire crackling", "crackling fire"]
     fallback_sound: "fireplace"
     playlist: "PLJQ4dxP4hw9M"  # playlist « Fireplace Sounds for Sleeping »
+  ocean:                  # vagues de l'océan (hors pluie, sans tonnerre)
+    video: ["ocean waves", "sea waves", "waves beach", "ocean waves rocks"]
+    sound: ["ocean waves", "sea waves", "waves beach", "ocean surf"]
+    fallback_sound: "ocean"
+    playlist: ""          # playlist « océan » à créer ; vide = aucune
   thunder_sound: ["distant thunder", "thunder rumble"]

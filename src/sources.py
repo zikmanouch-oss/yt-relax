@@ -22,6 +22,8 @@ BANNED_TAGS = {
     "people", "person", "man", "woman", "girl", "boy", "child", "crowd", "umbrella", "face",
     "cat", "cats", "kitten", "dog", "dogs", "puppy", "pet", "pets", "animal", "animals",
     "christmas", "santa", "gift", "gifts", "stocking", "candle", "candles", "tv", "television",
+    "surf", "surfer", "surfing", "boat", "boats", "ship", "yacht", "swimming", "swimmer", "bikini",
+    "drone", "aerial", "sunbathing", "tourist", "tourists", "resort", "hotel",
 }
 
 
