@@ -18,11 +18,15 @@ out = {
 uploads = ch["contentDetails"]["relatedPlaylists"]["uploads"]
 ids = [i["contentDetails"]["videoId"] for i in
        yt.playlistItems().list(part="contentDetails", playlistId=uploads, maxResults=50).execute().get("items", [])]
-vids = yt.videos().list(part="snippet,status,statistics,contentDetails,processingDetails", id=",".join(ids)).execute().get("items", []) if ids else []
+vids = yt.videos().list(part="snippet,status,statistics,contentDetails,processingDetails,localizations", id=",".join(ids)).execute().get("items", []) if ids else []
 out["videos"] = [{"id": v["id"], "title": v["snippet"]["title"], "privacy": v["status"]["privacyStatus"],
                   "upload": v["status"].get("uploadStatus"), "duration": v["contentDetails"]["duration"],
                   "views": v["statistics"].get("viewCount"), "thumbnail_custom": "maxres" in v["snippet"]["thumbnails"],
-                  "synthetic": v["status"].get("containsSyntheticMedia")} for v in vids]
+                  "synthetic": v["status"].get("containsSyntheticMedia"),
+                  "default_lang": v["snippet"].get("defaultLanguage"),
+                  "audio_lang": v["snippet"].get("defaultAudioLanguage"),
+                  "translations": sorted((v.get("localizations") or {}).keys()),
+                  "ar_title": (v.get("localizations") or {}).get("ar", {}).get("title")} for v in vids]
 pls = yt.playlists().list(part="snippet,contentDetails,status", mine=True, maxResults=50).execute().get("items", [])
 out["playlists"] = [{"id": p["id"], "title": p["snippet"]["title"], "count": p["contentDetails"]["itemCount"],
                      "privacy": p["status"]["privacyStatus"]} for p in pls]
