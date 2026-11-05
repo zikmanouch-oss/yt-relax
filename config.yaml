@@ -46,5 +46,5 @@ themes:
     video: ["ocean waves", "sea waves", "waves beach", "ocean waves rocks"]
     sound: ["ocean waves", "sea waves", "waves beach", "ocean surf"]
     fallback_sound: "ocean"
-    playlist: ""          # playlist « océan » à créer ; vide = aucune
+    playlist: "PLXQ6VvjRgovw"  # playlist « Ocean Waves Sounds for Sleeping »
   thunder_sound: ["distant thunder", "thunder rumble"]
