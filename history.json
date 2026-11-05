@@ -131,5 +131,26 @@
       324499,
       569313
     ]
+  },
+  {
+    "date": "2026-11-05T08:51:28+00:00",
+    "video_id": "1mIA5IHT6Ig",
+    "title": "Forest Rain Sounds for Sleeping – Black Screen, 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 867487,
+    "theme": "forest",
+    "thunder": false,
+    "black": true,
+    "clip_ids": [
+      28236,
+      174996
+    ],
+    "sound_ids": [
+      740222,
+      222637,
+      673951,
+      615011,
+      673947
+    ]
   }
 ]
