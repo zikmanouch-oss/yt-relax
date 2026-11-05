@@ -24,10 +24,10 @@ on:
       task:
         description: "Tâche"
         type: choice
-        options: [video, branding, status]
+        options: [video, branding, status, playlist_add]
         default: video
       queries:
-        description: "branding : recherches séparées par ;"
+        description: "branding : recherches séparées par ; — playlist_add : « VIDEO_ID PLAYLIST_ID »"
         type: string
         default: ""
 
@@ -57,7 +57,7 @@ jobs:
           git push
 
   status:
-    if: inputs.task == 'status'
+    if: inputs.task == 'status' || inputs.task == 'playlist_add'
     runs-on: ubuntu-latest
     env:
       YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -69,11 +69,14 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q google-api-python-client google-auth
+      - name: Ajouter une vidéo à une playlist
+        if: inputs.task == 'playlist_add'
+        run: python scripts/playlist_add.py ${{ inputs.queries }}
       - name: État de la chaîne (lecture seule)
         run: python scripts/channel_status.py
 
   publish:
-    if: inputs.task != 'branding' && inputs.task != 'status'
+    if: inputs.task != 'branding' && inputs.task != 'status' && inputs.task != 'playlist_add'
     runs-on: ubuntu-latest
     timeout-minutes: 340
     concurrency:
