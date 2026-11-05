@@ -28,6 +28,6 @@ for v in yt.videos().list(part="snippet", id=",".join(ids)).execute().get("items
         continue
     sn["description"] = desc.replace(ANCHOR, ANCHOR + "\n" + LINE, 1)
     body = {"id": v["id"], "snippet": {k: sn[k] for k in ("title", "description", "categoryId", "tags",
-                                                         "defaultLanguage") if k in sn}}
+                                                         "defaultLanguage", "defaultAudioLanguage") if k in sn}}
     yt.videos().update(part="snippet", body=body).execute()
     print("mise à jour :", v["id"], sn["title"])

@@ -278,3 +278,24 @@ def _build(theme: str, thunder: bool, hours: float, seed: int,
         "thumb_line2": (f"{'& THUNDER • ' if thunder else 'DEEP SLEEP • '}{h} HOURS" if hours >= 1
                         else ("& THUNDER" if thunder else "DEEP SLEEP")),
     }
+
+
+CHANNEL_URL = "https://www.youtube.com/@CalmHavenSounds-z4p"
+SUBSCRIBE_ANCHOR = "🔔 Subscribe to Calm Haven Sounds for new rain, fireplace, ocean and nature soundscapes every week."
+PLAYLIST_LABEL = {"fireplace": "More fireplace sounds", "ocean": "More ocean sounds"}
+
+
+def link_lines(theme: str, playlist_id: str | None) -> list[str]:
+    lines = [f"👉 Subscribe: {CHANNEL_URL}?sub_confirmation=1"]
+    if playlist_id:
+        label = PLAYLIST_LABEL.get(theme, "More rain sounds")
+        lines.append(f"📂 {label}: https://www.youtube.com/playlist?list={playlist_id}")
+    return lines
+
+
+def add_links(description: str, theme: str, playlist_id: str | None) -> str:
+    """Ajoute le lien d'abonnement et celui de la playlist sous l'appel à l'abonnement."""
+    new = [l for l in link_lines(theme, playlist_id) if l not in description]
+    if not new or SUBSCRIBE_ANCHOR not in description:
+        return description
+    return description.replace(SUBSCRIBE_ANCHOR, SUBSCRIBE_ANCHOR + "\n" + "\n".join(new), 1)
