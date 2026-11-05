@@ -21,6 +21,14 @@ on:
         description: "Forcer une ambiance (vide = rotation) : window, forest, lake, roof, fireplace"
         type: string
         default: ""
+      thunder:
+        description: "Avec une ambiance forcée : ajouter du tonnerre lointain"
+        type: boolean
+        default: false
+      black:
+        description: "Version écran noir (son seul)"
+        type: boolean
+        default: false
       task:
         description: "Tâche"
         type: choice
@@ -80,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 340
     concurrency:
-      group: publish-${{ inputs.theme || 'rotation' }}
+      group: publish-${{ inputs.theme || 'rotation' }}${{ inputs.black && '-black' || '' }}
       cancel-in-progress: false
     env:
       YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -148,6 +156,8 @@ jobs:
           [ -n "${{ steps.mode.outputs.hours }}" ] && ARGS="$ARGS --hours ${{ steps.mode.outputs.hours }}"
           [ "${{ steps.mode.outputs.mode }}" = "test" ] && ARGS="$ARGS --dry-run"
           [ -n "${{ inputs.theme }}" ] && ARGS="$ARGS --theme ${{ inputs.theme }}"
+          [ "${{ inputs.thunder }}" = "true" ] && ARGS="$ARGS --thunder"
+          [ "${{ inputs.black }}" = "true" ] && ARGS="$ARGS --black"
           python -m src.main $ARGS
 
       - name: Extrait léger (2 min autour du raccord de boucle)

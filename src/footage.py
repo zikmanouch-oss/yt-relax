@@ -83,3 +83,11 @@ def final_mux(segment: str, audio: str, seconds: int, dest: str) -> None:
     _run(["ffmpeg", "-y", "-v", "error", "-stats", "-stats_period", "60",
           "-stream_loop", "-1", "-i", segment, "-i", audio,
           "-map", "0:v", "-map", "1:a", "-c", "copy", "-t", str(seconds), dest])
+
+
+def black_mux(audio: str, seconds: int, dest: str) -> None:
+    """Écran noir 1080p à 1 image/s + son : fichier léger, rendu en quelques minutes."""
+    _run(["ffmpeg", "-y", "-v", "error", "-stats", "-stats_period", "60",
+          "-f", "lavfi", "-i", "color=c=black:s=1920x1080:r=1", "-i", audio,
+          "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-preset", "veryfast", "-tune", "stillimage",
+          "-crf", "30", "-pix_fmt", "yuv420p", "-g", "60", "-c:a", "copy", "-t", str(seconds), dest])

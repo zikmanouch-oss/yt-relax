@@ -39,17 +39,21 @@ def main() -> None:
     ap.add_argument("--dry-run", action="store_true", help="génère sans publier")
     ap.add_argument("--out", default="out")
     ap.add_argument("--theme", default=None, help="force une ambiance (ex. fireplace)")
+    ap.add_argument("--thunder", action="store_true", help="avec --theme : ajoute du tonnerre lointain")
+    ap.add_argument("--black", action="store_true", help="version écran noir (son seul, image noire)")
     args = ap.parse_args()
 
     cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
     hours = args.hours if args.hours is not None else float(cfg["hours"])
     seconds = int(hours * 3600)
     history = load_history()
-    variant = cfg["variants"][len(history) % len(cfg["variants"])]
+    rotation = [h for h in history if not h.get("black")]  # les écrans noirs ne décalent pas la rotation
+    variant = cfg["variants"][len(rotation) % len(cfg["variants"])]
     if args.theme:
-        if args.theme not in cfg["themes"]:
+        if args.theme not in cfg["themes"] or args.theme == "thunder_sound":
             raise SystemExit(f"Ambiance inconnue : {args.theme}")
-        variant = {"theme": args.theme, "thunder": False}
+        variant = {"theme": args.theme, "thunder": args.thunder}
+    black = args.black
     theme, thunder = variant["theme"], bool(variant["thunder"])
     seed = int(time.time()) % 1_000_000
     rng = random.Random(seed)
@@ -63,18 +67,18 @@ def main() -> None:
     out = Path(args.out)
     assets = out / "assets"
     assets.mkdir(parents=True, exist_ok=True)
-    step(f"Ambiance « {theme} », tonnerre={thunder}, {hours:g} h, graine {seed}", t0)
+    step(f"Ambiance « {theme} », tonnerre={thunder}, écran noir={black}, {hours:g} h, graine {seed}", t0)
 
     # 1. Médias réels
     tcfg = cfg["themes"][theme]
-    n_clips = int(cfg.get("clips_per_video", 8))
+    n_clips = 2 if black else int(cfg.get("clips_per_video", 8))  # écran noir : clips pour la miniature seulement
     clips = sources.video_clips(rng.choice(tcfg["video"]), n_clips, assets, rng, avoid_clips, blocked)
     for q in tcfg["video"]:
         if len(clips) >= 4:
             break
         clips += sources.video_clips(q, n_clips - len(clips), assets, rng,
                                      avoid_clips | {c["id"] for c in clips}, blocked)
-    if len(clips) < 3:
+    if len(clips) < (1 if black else 3):
         raise SystemExit("Pas assez de clips vidéo exploitables.")
     sounds = sources.freesound_sounds(rng.choice(tcfg["sound"]), int(cfg.get("sounds_per_video", 5)),
                                       assets, rng, avoid=avoid_sounds)
@@ -86,12 +90,15 @@ def main() -> None:
         thunders = sources.freesound_sounds(rng.choice(cfg["themes"]["thunder_sound"]), 3, assets, rng, min_dur=8)
     step("Médias téléchargés", t0)
 
-    # 2. Vidéo : clips normalisés → segment bouclable
-    norm = [footage.normalize(c["path"], str(assets / f"n{i}.mp4")) for i, c in enumerate(clips)]
-    seg_target = min(int(cfg.get("segment_minutes", 15) * 60), max(60, seconds))
+    # 2. Vidéo : clips normalisés → segment bouclable (sauf écran noir)
     segment = str(out / "segment.mp4")
-    loop_len = footage.build_segment(norm, seg_target, segment, rng, cfg.get("video_maxrate", "3M"))
-    step(f"Segment vidéo de {loop_len / 60:.1f} min prêt", t0)
+    if black:
+        frame = footage.frame(clips[0]["path"], 3.0, str(out / "frame.png"))
+    else:
+        norm = [footage.normalize(c["path"], str(assets / f"n{i}.mp4")) for i, c in enumerate(clips)]
+        seg_target = min(int(cfg.get("segment_minutes", 15) * 60), max(60, seconds))
+        loop_len = footage.build_segment(norm, seg_target, segment, rng, cfg.get("video_maxrate", "3M"))
+        step(f"Segment vidéo de {loop_len / 60:.1f} min prêt", t0)
 
     # 3. Son : mixage des enregistrements réels
     audio = str(out / "audio.m4a")
@@ -99,8 +106,9 @@ def main() -> None:
     step("Paysage sonore mixé", t0)
 
     # 4. Miniature + textes
-    frame = footage.frame(segment, rng.uniform(5, max(6, loop_len - 5)), str(out / "frame.png"))
-    meta = metadata.build(theme, thunder, hours, seed, clips, sounds + thunders)
+    if not black:
+        frame = footage.frame(segment, rng.uniform(5, max(6, loop_len - 5)), str(out / "frame.png"))
+    meta = metadata.build(theme, thunder, hours, seed, clips, sounds + thunders, black=black)
     meta["clips"] = [{"id": c["id"], "page": c.get("page", "")} for c in clips]
     thumb = str(out / "thumb.jpg")
     visual.thumbnail(frame, meta["thumb_line1"], meta["thumb_line2"], thumb)
@@ -109,7 +117,10 @@ def main() -> None:
 
     # 5. Assemblage final (copie directe, sans réencodage)
     video = str(out / "video.mp4")
-    footage.final_mux(segment, audio, seconds, video)
+    if black:
+        footage.black_mux(audio, seconds, video)
+    else:
+        footage.final_mux(segment, audio, seconds, video)
     step(f"Vidéo finale : {Path(video).stat().st_size / 1e9:.2f} Go", t0)
 
     if args.dry_run:
@@ -132,6 +143,7 @@ def main() -> None:
         "seed": seed,
         "theme": theme,
         "thunder": thunder,
+        "black": black,
         "clip_ids": [c["id"] for c in clips],
         "sound_ids": [s["id"] for s in sounds],
     }

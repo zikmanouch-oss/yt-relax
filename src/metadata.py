@@ -160,9 +160,49 @@ def chapters(hours: float) -> str:
     return "\n".join(f"{_ts(t)} {label}" for t, label in marks)
 
 
+BLACK_TITLES = {
+    "window": "Rain on Window Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
+    "forest": "Forest Rain Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
+    "lake": "Rain on a Lake Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
+    "roof": "Rain on Roof Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
+    "fireplace": "Fireplace Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
+}
+
+
+def _blackify(d: dict, theme: str, thunder: bool, hours: float, y: int) -> dict:
+    """Variante « écran noir » : titre, 1re phrase, puce et tags adaptés (promesse tenue : image noire)."""
+    h = f"{hours:g}"
+    title = BLACK_TITLES[theme].format(h=h, t=THUNDER if thunder else "", y=y)
+    if len(title) > 100:
+        title = BLACK_TITLES[theme].format(h=h, t="", y=y)
+    desc = d["description"]
+    desc = desc.replace("Rain sounds for sleeping: ", "Rain sounds for sleeping with a black screen: ", 1)
+    desc = desc.replace("Fireplace sounds for sleeping: ", "Fireplace sounds for sleeping with a black screen: ", 1)
+    for tip in ("📵 Tip: lower your screen brightness and let the sound play",
+                "📵 Tip: lower your screen brightness and let the fire play"):
+        desc = desc.replace(tip, "⬛ Black screen: no light to keep you awake, just the sound")
+    desc = desc.replace("Footage: ", "Thumbnail image: ", 1)
+    kind = "fireplace" if theme == "fireplace" else "rain"
+    tags = [t for t in d["tags"] if "hours" not in t][:16] + [
+        "black screen", f"{kind} sounds black screen", f"{kind} sounds for sleeping black screen",
+        "dark screen sleep sounds"]
+    return {**d, "title": title[:100], "description": desc, "tags": tags,
+            "thumb_line2": f"BLACK SCREEN • {h} HOURS" if hours >= 1 else "BLACK SCREEN"}
+
+
 def build(theme: str, thunder: bool, hours: float, seed: int,
           clips: list[dict], sounds: list[dict], video_source: str = "Pixabay (pixabay.com)",
-          year: int | None = None) -> dict:
+          year: int | None = None, black: bool = False) -> dict:
+    d = _build(theme, thunder, hours, seed, clips, sounds, video_source, year)
+    if black:
+        y = year or _dt.datetime.now(_dt.timezone.utc).year
+        d = _blackify(d, theme, thunder, hours, y)
+    return d
+
+
+def _build(theme: str, thunder: bool, hours: float, seed: int,
+           clips: list[dict], sounds: list[dict], video_source: str = "Pixabay (pixabay.com)",
+           year: int | None = None) -> dict:
     rnd = random.Random(seed)
     h = f"{hours:g}"
     y = year or _dt.datetime.now(_dt.timezone.utc).year
