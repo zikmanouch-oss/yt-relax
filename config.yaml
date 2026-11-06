@@ -1,6 +1,7 @@
 # Réglages de la chaîne — modifiables sans toucher au code.
 
 hours: 8                 # durée de chaque vidéo (heures)
+max_per_day: 3           # plafond déclaré à Google (jour = minuit heure du Pacifique)
 segment_minutes: 15      # longueur de la séquence vidéo avant qu'elle se répète
 clips_per_video: 8       # nombre de clips vidéo mélangés
 sounds_per_video: 5      # nombre d'enregistrements mélangés

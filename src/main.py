@@ -47,6 +47,15 @@ def main() -> None:
     hours = args.hours if args.hours is not None else float(cfg["hours"])
     seconds = int(hours * 3600)
     history = load_history()
+    if not args.dry_run:
+        # plafond déclaré à Google : 3 publications par « jour de quota » (minuit heure du Pacifique)
+        from zoneinfo import ZoneInfo
+        pt = ZoneInfo("America/Los_Angeles")
+        today = datetime.now(pt).date()
+        done = [h for h in history if datetime.fromisoformat(h["date"]).astimezone(pt).date() == today]
+        if len(done) >= int(cfg.get("max_per_day", 3)):
+            print(f"::notice::Déjà {len(done)} publications aujourd'hui (plafond {cfg.get('max_per_day', 3)}) : rien de publié.")
+            return
     rotation = [h for h in history if not h.get("black")]  # les écrans noirs ne décalent pas la rotation
     variant = cfg["variants"][len(rotation) % len(cfg["variants"])]
     if args.theme:
