@@ -102,7 +102,7 @@ jobs:
 
   publish:
     if: inputs.task == 'video' || inputs.task == ''
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 340
     concurrency:
       group: publish-${{ inputs.theme || 'rotation' }}${{ inputs.black && '-black' || '' }}
@@ -156,7 +156,12 @@ jobs:
             # 2) sinon : mise à jour des seules sources principales, puis installation
             for i in 1 2 3; do
               command -v ffmpeg >/dev/null && command -v ffprobe >/dev/null && break
-              timeout 240 sudo apt-get $APT update -qq -o Dir::Etc::sourceparts=- || true
+              # mise à jour limitée aux dépôts Ubuntu (les dépôts tiers du runner ralentissent ou bloquent apt)
+              if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+                timeout 240 sudo apt-get $APT update -qq -o Dir::Etc::sourcelist=/etc/apt/sources.list.d/ubuntu.sources -o Dir::Etc::sourceparts=- || true
+              else
+                timeout 240 sudo apt-get $APT update -qq -o Dir::Etc::sourceparts=- || true
+              fi
               timeout 300 sudo apt-get $APT install -y -qq --no-install-recommends --fix-missing ffmpeg fonts-dejavu-core || true
               echo "Nouvel essai d'installation ($i)…"; sleep 10
             done
