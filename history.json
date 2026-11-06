@@ -248,5 +248,32 @@
       828405,
       872740
     ]
+  },
+  {
+    "date": "2026-11-06T20:43:42+00:00",
+    "video_id": "cR05CV-qcng",
+    "title": "Cozy Fireplace Ambience – 8 Hours of Crackling Fire for Sleep (2026)",
+    "hours": 8.0,
+    "seed": 995188,
+    "theme": "fireplace",
+    "thunder": false,
+    "black": false,
+    "clip_ids": [
+      73432,
+      89377,
+      123069,
+      51650,
+      211761,
+      2336,
+      200021,
+      4834
+    ],
+    "sound_ids": [
+      342104,
+      569646,
+      145774,
+      484337,
+      620007
+    ]
   }
 ]
