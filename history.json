@@ -221,5 +221,32 @@
       698108,
       619058
     ]
+  },
+  {
+    "date": "2026-11-06T20:27:34+00:00",
+    "video_id": "zjS6pEVLgZk",
+    "title": "Relaxing Waterfall in Nature – 8 Hours for Sleep, Study & Calm (2026)",
+    "hours": 8.0,
+    "seed": 995154,
+    "theme": "waterfall",
+    "thunder": false,
+    "black": false,
+    "clip_ids": [
+      222295,
+      108704,
+      48898,
+      22589,
+      130316,
+      2540,
+      83374,
+      170060
+    ],
+    "sound_ids": [
+      376202,
+      632107,
+      798380,
+      828405,
+      872740
+    ]
   }
 ]
