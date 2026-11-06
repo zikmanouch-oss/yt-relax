@@ -54,6 +54,9 @@ def main() -> None:
             raise SystemExit(f"Ambiance inconnue : {args.theme}")
         variant = {"theme": args.theme, "thunder": args.thunder}
     black = args.black
+    if black and any(h.get("black") and h.get("theme") == variant["theme"] for h in history):
+        # règle du propriétaire (06/11) : un seul écran noir par ambiance
+        raise SystemExit(f"Un écran noir existe déjà pour l'ambiance « {variant['theme']} » : publication annulée.")
     theme, thunder = variant["theme"], bool(variant["thunder"])
     seed = int(time.time()) % 1_000_000
     rng = random.Random(seed)
