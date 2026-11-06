@@ -324,11 +324,15 @@ PLAYLIST_LABEL = {"fireplace": "More fireplace sounds", "ocean": "More ocean sou
                   "waterfall": "More waterfall sounds"}
 
 
+CALM_PLAYLIST = "PLEChJox9ZBJU"  # « Calming Sounds for Anxiety & Stress Relief »
+
+
 def link_lines(theme: str, playlist_id: str | None) -> list[str]:
     lines = [f"👉 Subscribe: {CHANNEL_URL}?sub_confirmation=1"]
     if playlist_id:
         label = PLAYLIST_LABEL.get(theme, "More rain sounds")
         lines.append(f"📂 {label}: https://www.youtube.com/playlist?list={playlist_id}")
+    lines.append(f"😌 Calming sounds for anxiety & stress: https://www.youtube.com/playlist?list={CALM_PLAYLIST}")
     return lines
 
 
@@ -421,6 +425,7 @@ def arabic(theme: str, thunder: bool, hours: float, black: bool, playlist_id: st
     links = [f"👉 اشترك: {CHANNEL_URL}?sub_confirmation=1"]
     if playlist_id:
         links.append(f"📂 المزيد: https://www.youtube.com/playlist?list={playlist_id}")
+    links.append(f"😌 أصوات هادئة للتخلص من القلق والتوتر: https://www.youtube.com/playlist?list={CALM_PLAYLIST}")
     desc = AR_DESCRIPTION.format(
         lead=AR_LEAD.get(theme, "أصوات المطر للنوم"), hh=hh, scene=AR_SCENE[theme],
         thunder=" مع رعد خفيف بعيد" if thunder else "",
