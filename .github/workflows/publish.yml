@@ -29,10 +29,14 @@ on:
         description: "Version écran noir (son seul)"
         type: boolean
         default: false
+      force:
+        description: "Ignorer exceptionnellement le plafond de 3 publications/jour"
+        type: boolean
+        default: false
       task:
         description: "Tâche"
         type: choice
-        options: [video, branding, status, playlist_add, noads, links, arabic, fixlang]
+        options: [video, branding, status, playlist_add, playlist_create, noads, links, arabic, fixlang]
         default: video
       queries:
         description: "branding : recherches séparées par ; — playlist_add : « VIDEO_ID PLAYLIST_ID »"
@@ -65,7 +69,7 @@ jobs:
           git push
 
   status:
-    if: inputs.task == 'status' || inputs.task == 'playlist_add' || inputs.task == 'noads' || inputs.task == 'links' || inputs.task == 'arabic' || inputs.task == 'fixlang'
+    if: inputs.task == 'status' || inputs.task == 'playlist_add' || inputs.task == 'noads' || inputs.task == 'links' || inputs.task == 'arabic' || inputs.task == 'fixlang' || inputs.task == 'playlist_create'
     runs-on: ubuntu-latest
     env:
       YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -94,6 +98,11 @@ jobs:
       - name: Ajouter « No mid-roll ads » aux descriptions existantes
         if: inputs.task == 'noads'
         run: python scripts/add_noads_line.py
+      - name: Créer une playlist
+        if: inputs.task == 'playlist_create'
+        env:
+          PL: ${{ inputs.queries }}
+        run: python scripts/playlist_create.py "$PL"
       - name: Ajouter une vidéo à une playlist
         if: inputs.task == 'playlist_add'
         run: python scripts/playlist_add.py ${{ inputs.queries }}
@@ -150,20 +159,17 @@ jobs:
         timeout-minutes: 25
         run: |
           if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
-            APT="-o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20"
-            # 1) sans mise à jour des listes (rapide si le runner les a déjà)
-            timeout 240 sudo apt-get $APT install -y -qq --no-install-recommends ffmpeg fonts-dejavu-core || true
-            # 2) sinon : mise à jour des seules sources principales, puis installation
+            # Les dépôts tiers du runner (Microsoft, etc.) ralentissent ou bloquent apt : on ne garde que ceux d'Ubuntu.
+            sudo mkdir -p /etc/apt/disabled-sources
+            for f in /etc/apt/sources.list.d/*; do
+              [ -e "$f" ] || continue
+              case "$(basename "$f")" in ubuntu.sources|ubuntu.list) ;; *) sudo mv "$f" /etc/apt/disabled-sources/ ;; esac
+            done
+            APT="-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30"
             for i in 1 2 3; do
-              command -v ffmpeg >/dev/null && command -v ffprobe >/dev/null && break
-              # mise à jour limitée aux dépôts Ubuntu (les dépôts tiers du runner ralentissent ou bloquent apt)
-              if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
-                timeout 240 sudo apt-get $APT update -qq -o Dir::Etc::sourcelist=/etc/apt/sources.list.d/ubuntu.sources -o Dir::Etc::sourceparts=- || true
-              else
-                timeout 240 sudo apt-get $APT update -qq -o Dir::Etc::sourceparts=- || true
-              fi
-              timeout 300 sudo apt-get $APT install -y -qq --no-install-recommends --fix-missing ffmpeg fonts-dejavu-core || true
-              echo "Nouvel essai d'installation ($i)…"; sleep 10
+              timeout 300 sudo apt-get $APT update -q && \
+              timeout 300 sudo apt-get $APT install -y -q --no-install-recommends ffmpeg fonts-dejavu-core && break
+              echo "Nouvel essai d'installation ($i)…"; sleep 15
             done
           fi
           command -v ffmpeg >/dev/null && command -v ffprobe >/dev/null || { echo "::error::ffmpeg introuvable"; exit 1; }
@@ -186,6 +192,7 @@ jobs:
           [ -n "${{ inputs.theme }}" ] && ARGS="$ARGS --theme ${{ inputs.theme }}"
           [ "${{ inputs.thunder }}" = "true" ] && ARGS="$ARGS --thunder"
           [ "${{ inputs.black }}" = "true" ] && ARGS="$ARGS --black"
+          [ "${{ inputs.force }}" = "true" ] && ARGS="$ARGS --force"
           python -m src.main $ARGS
 
       - name: Extrait léger (2 min autour du raccord de boucle)

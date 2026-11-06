@@ -84,12 +84,13 @@ def upload(video: str, thumb: str, meta: dict, cfg: dict) -> str:
     except HttpError as e:
         print(f"Miniature non appliquée (chaîne non vérifiée ?) : {e}")
 
-    playlist = cfg.get("playlist_id")
-    if playlist:
+    playlists = [cfg.get("playlist_id")] + list(cfg.get("extra_playlists") or [])
+    for playlist in dict.fromkeys(p for p in playlists if p):
         try:
             yt.playlistItems().insert(part="snippet", body={"snippet": {
                 "playlistId": playlist,
                 "resourceId": {"kind": "youtube#video", "videoId": video_id}}}).execute()
+            print(f"Ajoutée à la playlist {playlist}")
         except HttpError as e:
-            print(f"Ajout à la playlist impossible : {e}")
+            print(f"Ajout à la playlist {playlist} impossible : {e}")
     return video_id

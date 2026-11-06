@@ -28,7 +28,7 @@ def load_history() -> list:
     return []
 
 
-FAMILY = {"fireplace": "fireplace", "ocean": "ocean"}  # toutes les autres ambiances = « rain »
+FAMILY = {"fireplace": "fireplace", "ocean": "ocean", "waterfall": "waterfall"}  # toutes les autres ambiances = « rain »
 
 
 def pick_variant(cfg: dict, history: list) -> dict:
@@ -36,10 +36,10 @@ def pick_variant(cfg: dict, history: list) -> dict:
     d'ambiances (pluie / feu / océan) qui a le moins de vidéos sur la chaîne, écrans noirs
     compris. En cas d'égalité : océan, puis feu, puis pluie. Dans une famille, les
     variantes de config.yaml tournent dans l'ordre."""
-    counts = {"ocean": 0, "fireplace": 0, "rain": 0}
+    counts = {"ocean": 0, "fireplace": 0, "waterfall": 0, "rain": 0}
     for h in history:
         counts[FAMILY.get(h.get("theme"), "rain")] += 1
-    family = min(("ocean", "fireplace", "rain"), key=lambda f: counts[f])
+    family = min(("ocean", "fireplace", "waterfall", "rain"), key=lambda f: counts[f])
     options = [v for v in cfg["variants"] if FAMILY.get(v["theme"], "rain") == family]
     if not options:
         options = [{"theme": family, "thunder": False}]
@@ -61,13 +61,14 @@ def main() -> None:
     ap.add_argument("--theme", default=None, help="force une ambiance (ex. fireplace)")
     ap.add_argument("--thunder", action="store_true", help="avec --theme : ajoute du tonnerre lointain")
     ap.add_argument("--black", action="store_true", help="version écran noir (son seul, image noire)")
+    ap.add_argument("--force", action="store_true", help="ignore le plafond quotidien (exceptionnel)")
     args = ap.parse_args()
 
     cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
     hours = args.hours if args.hours is not None else float(cfg["hours"])
     seconds = int(hours * 3600)
     history = load_history()
-    if not args.dry_run:
+    if not args.dry_run and not args.force:
         # plafond déclaré à Google : 3 publications par « jour de quota » (minuit heure du Pacifique)
         from zoneinfo import ZoneInfo
         pt = ZoneInfo("America/Los_Angeles")

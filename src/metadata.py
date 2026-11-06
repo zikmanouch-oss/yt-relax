@@ -51,7 +51,36 @@ OTHER_TITLES["ocean"] = [
     "Ocean Sounds for Deep Sleep – {h} Hours of Calm Waves on the Shore ({y})",
     "Relaxing Ocean Waves for Sleep, Study & Calm – {h} Hours ({y})",
 ]
+OTHER_TITLES["waterfall"] = [
+    "Waterfall Sounds for Sleeping – {h} Hours of Relaxing Waterfall ({y})",
+    "Waterfall White Noise for Deep Sleep – {h} Hours ({y})",
+    "Relaxing Waterfall in Nature – {h} Hours for Sleep, Study & Calm ({y})",
+]
 OTHER_DESCRIPTION = {
+    "waterfall": """Waterfall sounds for sleeping: {h} hours of a steady, relaxing waterfall to help you \
+fall asleep fast, sleep deeply through the night and quiet a busy mind.
+
+Let the constant rush of falling water wash the noise of the day away. This is real nature sound, \
+with no music and no talking, so it works as calm background for sleep, insomnia, \
+studying, focus, reading, meditation or soothing a baby.
+
+💧 Real waterfall recordings
+🌙 {h} hours, uninterrupted: play it all night
+🎧 Best with headphones or a speaker at low volume
+🚫 No mid-roll ads: nothing will interrupt your sleep
+📵 Tip: lower your screen brightness and let the water flow
+
+⏱️ Sleep timer
+{chapters}
+
+🔔 Subscribe to Calm Haven Sounds for new rain, fireplace, ocean and nature soundscapes every week.
+
+— Credits —
+Footage: {video_source} — {video_credits}
+Sounds: Freesound (freesound.org, CC0) — {sound_credits}
+
+#waterfallsounds #sleepsounds #whitenoise
+""",
     "ocean": """Ocean waves sounds for sleeping: {h} hours of gentle sea waves rolling onto the shore to help you \
 fall asleep fast, sleep deeply through the night and quiet a busy mind.
 
@@ -102,6 +131,11 @@ Sounds: Freesound (freesound.org, CC0) — {sound_credits}
 """,
 }
 OTHER_TAGS = {
+    "waterfall": [
+        "waterfall sounds", "waterfall sounds for sleeping", "waterfall white noise", "water sounds",
+        "nature sounds", "relaxing waterfall", "sleep sounds", "relaxing sounds", "deep sleep",
+        "white noise", "insomnia", "study sounds", "relaxation", "calm haven sounds",
+    ],
     "ocean": [
         "ocean waves", "ocean waves sounds for sleeping", "ocean sounds", "sea waves", "waves sounds",
         "beach waves", "ocean waves for sleep", "sleep sounds", "relaxing sounds", "deep sleep",
@@ -128,7 +162,8 @@ SCENE_LINE = {
 }
 
 THUMB = {"window": "RAIN ON WINDOW", "forest": "FOREST RAIN", "lake": "RAIN ON THE LAKE", "roof": "RAIN ON ROOF",
-         "fireplace": "COZY FIREPLACE", "ocean": "OCEAN WAVES"}
+         "fireplace": "COZY FIREPLACE", "ocean": "OCEAN WAVES",
+         "waterfall": "WATERFALL"}
 
 HASHTAGS = {False: "#rainsounds #sleepsounds #relaxing", True: "#rainsounds #sleepsounds #thunderstorm"}
 
@@ -203,6 +238,7 @@ BLACK_TITLES = {
     "roof": "Rain on Roof Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
     "fireplace": "Fireplace Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
     "ocean": "Ocean Waves Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
+    "waterfall": "Waterfall Sounds for Sleeping – Black Screen, {h} Hours{t} ({y})",
 }
 
 
@@ -216,12 +252,14 @@ def _blackify(d: dict, theme: str, thunder: bool, hours: float, y: int) -> dict:
     desc = desc.replace("Rain sounds for sleeping: ", "Rain sounds for sleeping with a black screen: ", 1)
     desc = desc.replace("Fireplace sounds for sleeping: ", "Fireplace sounds for sleeping with a black screen: ", 1)
     desc = desc.replace("Ocean waves sounds for sleeping: ", "Ocean waves sounds for sleeping with a black screen: ", 1)
+    desc = desc.replace("Waterfall sounds for sleeping: ", "Waterfall sounds for sleeping with a black screen: ", 1)
     for tip in ("📵 Tip: lower your screen brightness and let the sound play",
                 "📵 Tip: lower your screen brightness and let the fire play",
-                "📵 Tip: lower your screen brightness and let the waves play"):
+                "📵 Tip: lower your screen brightness and let the waves play",
+                "📵 Tip: lower your screen brightness and let the water flow"):
         desc = desc.replace(tip, "⬛ Black screen: no light to keep you awake, just the sound")
     desc = desc.replace("Footage: ", "Thumbnail image: ", 1)
-    kind = {"fireplace": "fireplace", "ocean": "ocean"}.get(theme, "rain")
+    kind = {"fireplace": "fireplace", "ocean": "ocean", "waterfall": "waterfall"}.get(theme, "rain")
     tags = [t for t in d["tags"] if "hours" not in t][:16] + [
         "black screen", f"{kind} sounds black screen", f"{kind} sounds for sleeping black screen",
         "dark screen sleep sounds"]
@@ -282,7 +320,8 @@ def _build(theme: str, thunder: bool, hours: float, seed: int,
 
 CHANNEL_URL = "https://www.youtube.com/@CalmHavenSounds-z4p"
 SUBSCRIBE_ANCHOR = "🔔 Subscribe to Calm Haven Sounds for new rain, fireplace, ocean and nature soundscapes every week."
-PLAYLIST_LABEL = {"fireplace": "More fireplace sounds", "ocean": "More ocean sounds"}
+PLAYLIST_LABEL = {"fireplace": "More fireplace sounds", "ocean": "More ocean sounds",
+                  "waterfall": "More waterfall sounds"}
 
 
 def link_lines(theme: str, playlist_id: str | None) -> list[str]:
@@ -310,8 +349,9 @@ AR_TITLES = {
     "roof": "صوت المطر على السقف للنوم{b} – {h}{t} ({y})",
     "fireplace": "صوت المدفأة وطقطقة الحطب للنوم{b} – {h}{t} ({y})",
     "ocean": "صوت أمواج البحر للنوم العميق{b} – {h}{t} ({y})",
+    "waterfall": "صوت الشلال للنوم العميق{b} – {h}{t} ({y})",
 }
-AR_LEAD = {"fireplace": "صوت المدفأة للنوم", "ocean": "صوت أمواج البحر للنوم"}
+AR_LEAD = {"fireplace": "صوت المدفأة للنوم", "ocean": "صوت أمواج البحر للنوم", "waterfall": "صوت الشلال للنوم"}
 AR_SCENE = {
     "window": "المطر الهادئ على زجاج النافذة",
     "forest": "المطر الهادئ في الغابة",
@@ -319,11 +359,13 @@ AR_SCENE = {
     "roof": "المطر على سقف كوخ دافئ",
     "fireplace": "نار دافئة وطقطقة الحطب",
     "ocean": "أمواج البحر الهادئة على الشاطئ",
+    "waterfall": "شلال هادئ وسط الطبيعة",
 }
 AR_HASHTAGS = {
     "rain": "#أصوات_المطر #صوت_المطر_للنوم #نوم_عميق",
     "fireplace": "#صوت_المدفأة #أصوات_للنوم #استرخاء",
     "ocean": "#صوت_البحر #أصوات_للنوم #استرخاء",
+    "waterfall": "#صوت_الشلال #أصوات_للنوم #استرخاء",
 }
 AR_DESCRIPTION = """{lead}: {hh} من {scene}{thunder} لتساعدك على النوم بسرعة، والنوم بعمق طوال الليل، وتهدئة أفكارك.
 
@@ -375,7 +417,7 @@ def arabic(theme: str, thunder: bool, hours: float, black: bool, playlist_id: st
     hh = _ar_hours(hours)
     title = AR_TITLES[theme].format(b="، شاشة سوداء" if black else "", h=hh,
                                     t=" مع رعد بعيد" if thunder else "", y=y)
-    kind = {"fireplace": "fireplace", "ocean": "ocean"}.get(theme, "rain")
+    kind = {"fireplace": "fireplace", "ocean": "ocean", "waterfall": "waterfall"}.get(theme, "rain")
     links = [f"👉 اشترك: {CHANNEL_URL}?sub_confirmation=1"]
     if playlist_id:
         links.append(f"📂 المزيد: https://www.youtube.com/playlist?list={playlist_id}")

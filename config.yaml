@@ -11,6 +11,9 @@ privacy: public          # public | unlisted | private
 category_id: 22          # 22 = People & Blogs, 10 = Music
 playlist_id: "PLbbqInyCAtYM" # playlist pluie (ambiances sans « playlist » propre)
 
+# Playlists où chaque nouvelle vidéo est AUSSI ajoutée (ex. sons anti-anxiété)
+extra_playlists: []
+
 # Clips à ne plus jamais utiliser (ID Pixabay, visibles dans metadata.json)
 blocked_clips: []
 
@@ -27,6 +30,7 @@ variants:
   - { theme: ocean,     thunder: false }
   - { theme: fireplace, thunder: false }
   - { theme: forest,    thunder: true }
+  - { theme: waterfall, thunder: false }
 
 themes:
   window:
@@ -51,4 +55,9 @@ themes:
     sound: ["ocean waves", "sea waves", "waves beach", "ocean surf"]
     fallback_sound: "ocean"
     playlist: "PLXQ6VvjRgovw"  # playlist « Ocean Waves Sounds for Sleeping »
+  waterfall:              # chute d'eau (ajoutée le 06/11)
+    video: ["waterfall", "waterfall forest", "waterfall nature", "cascade"]
+    sound: ["waterfall", "waterfall close", "waterfall stream"]
+    fallback_sound: "waterfall"
+    playlist: ""          # playlist « chute d'eau » (créée par la tâche playlist_create)
   thunder_sound: ["distant thunder", "thunder rumble"]
