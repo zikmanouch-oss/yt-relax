@@ -194,5 +194,32 @@
       158689,
       796529
     ]
+  },
+  {
+    "date": "2026-11-06T19:56:19+00:00",
+    "video_id": "G2vdBfBuoAk",
+    "title": "Ocean Waves Sounds for Sleeping – 8 Hours of Gentle Sea Waves (2026)",
+    "hours": 8.0,
+    "seed": 992391,
+    "theme": "ocean",
+    "thunder": false,
+    "black": false,
+    "clip_ids": [
+      286278,
+      65562,
+      42543,
+      21175,
+      22183,
+      283533,
+      2633,
+      28268
+    ],
+    "sound_ids": [
+      785224,
+      842779,
+      654442,
+      698108,
+      619058
+    ]
   }
 ]
