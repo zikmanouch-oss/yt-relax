@@ -275,5 +275,33 @@
       484337,
       620007
     ]
+  },
+  {
+    "date": "2026-11-06T20:51:04+00:00",
+    "video_id": "Bxq7SOJ_OU8",
+    "title": "Anxiety & Stress Relief: Alpha Waves 10 Hz Binaural Beats – 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 995698,
+    "theme": "binaural",
+    "thunder": false,
+    "black": false,
+    "beat": 10.0,
+    "clip_ids": [
+      1700,
+      375834,
+      147808,
+      244733,
+      178753,
+      3144,
+      313938,
+      147806
+    ],
+    "sound_ids": [
+      343865,
+      813228,
+      518637,
+      699225,
+      705548
+    ]
   }
 ]
