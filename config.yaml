@@ -13,16 +13,18 @@ playlist_id: "PLbbqInyCAtYM" # playlist pluie (ambiances sans « playlist » pro
 # Clips à ne plus jamais utiliser (ID Pixabay, visibles dans metadata.json)
 blocked_clips: []
 
-# Les ambiances tournent à chaque publication.
+# Les ambiances tournent à chaque publication (écrans noirs exclus).
+# Équilibre décidé le 06/11 : 1/3 océan, 1/3 feu, 1/3 pluie (la pluie était surreprésentée).
 variants:
-  - { theme: window, thunder: false }
-  - { theme: forest, thunder: true }
-  - { theme: lake,   thunder: false }
-  - { theme: roof,   thunder: true }
-  - { theme: window, thunder: true }
-  - { theme: forest, thunder: false }
-  - { theme: ocean,  thunder: false }
+  - { theme: ocean,     thunder: false }
   - { theme: fireplace, thunder: false }
+  - { theme: roof,      thunder: true }
+  - { theme: ocean,     thunder: false }
+  - { theme: fireplace, thunder: false }
+  - { theme: window,    thunder: false }
+  - { theme: ocean,     thunder: false }   # ← prochaine publication (06/11)
+  - { theme: fireplace, thunder: false }
+  - { theme: forest,    thunder: true }
 
 themes:
   window:
