@@ -1,4 +1,9 @@
-name: Publier une vidéo pluie
+name: Calm Haven Sounds
+run-name: >-
+  ${{ github.event_name == 'schedule' && 'Vidéo planifiée (ambiance choisie par équilibrage)'
+  || (inputs.task != 'video' && format('Tâche {0}', inputs.task))
+  || format('Vidéo {0}{1}{2}{3}', inputs.theme || 'auto', inputs.beat && format(' {0} Hz', inputs.beat) || '',
+            inputs.black && ' écran noir' || '', inputs.dry_run && ' (test)' || '') }}
 
 on:
   schedule:
@@ -49,10 +54,12 @@ on:
 
 permissions:
   contents: write
+  issues: write   # en cas d'échec : une « issue » au titre précis (mail de notification explicite)
 
 jobs:
   branding:
     if: inputs.task == 'branding'
+    name: Images de branding
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -73,6 +80,7 @@ jobs:
           git push
 
   status:
+    name: Tâche ${{ inputs.task }}
     if: inputs.task == 'status' || inputs.task == 'playlist_add' || inputs.task == 'noads' || inputs.task == 'links' || inputs.task == 'arabic' || inputs.task == 'fixlang' || inputs.task == 'playlist_create' || inputs.task == 'extra_backfill'
     runs-on: ubuntu-latest
     env:
@@ -118,7 +126,17 @@ jobs:
       - name: État de la chaîne (lecture seule)
         run: python scripts/channel_status.py
 
+      - name: Signaler l'échec (titre précis)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "❌ Échec de la tâche « ${{ inputs.task }} » ($(date -u +'%d/%m %H:%M') UTC)" \
+            --body "Journal : $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
   publish:
+    name: Vidéo ${{ inputs.theme || 'auto' }}
     if: inputs.task == 'video' || inputs.task == ''
     runs-on: ubuntu-24.04
     timeout-minutes: 340
@@ -240,3 +258,15 @@ jobs:
             git commit -qm "Historique : nouvelle vidéo publiée" && git push -q origin HEAD:main && break
             sleep $((i * 5))
           done
+
+      - name: Signaler l'échec (titre précis)
+        if: failure() && steps.mode.outputs.mode != 'test'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          CHOIX=$(cat out/choice.txt 2>/dev/null || echo "${{ inputs.theme || 'ambiance auto' }}")
+          ETAPE=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs" \
+            --jq '[.jobs[].steps[] | select(.conclusion == "failure") | .name][0] // "inconnue"' 2>/dev/null || echo "inconnue")
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "❌ Vidéo non publiée : $CHOIX — étape « $ETAPE » ($(date -u +'%d/%m %H:%M') UTC)" \
+            --body "Journal : $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

@@ -103,6 +103,10 @@ def main() -> None:
     out = Path(args.out)
     assets = out / "assets"
     assets.mkdir(parents=True, exist_ok=True)
+    # pour l'alerte d'échec : ambiance choisie, lisible par le workflow
+    (out / "choice.txt").write_text(
+        theme + (f" {beat:g} Hz" if beat else "") + (" + orage" if thunder else "") + (" écran noir" if black else ""),
+        encoding="utf-8")
     step(f"Ambiance « {theme} », battement={beat}, tonnerre={thunder}, écran noir={black}, {hours:g} h, graine {seed}", t0)
 
     # 1. Médias réels
