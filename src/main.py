@@ -28,6 +28,26 @@ def load_history() -> list:
     return []
 
 
+FAMILY = {"fireplace": "fireplace", "ocean": "ocean"}  # toutes les autres ambiances = « rain »
+
+
+def pick_variant(cfg: dict, history: list) -> dict:
+    """Équilibrage automatique (demande du propriétaire, 06/11) : on publie la famille
+    d'ambiances (pluie / feu / océan) qui a le moins de vidéos sur la chaîne, écrans noirs
+    compris. En cas d'égalité : océan, puis feu, puis pluie. Dans une famille, les
+    variantes de config.yaml tournent dans l'ordre."""
+    counts = {"ocean": 0, "fireplace": 0, "rain": 0}
+    for h in history:
+        counts[FAMILY.get(h.get("theme"), "rain")] += 1
+    family = min(("ocean", "fireplace", "rain"), key=lambda f: counts[f])
+    options = [v for v in cfg["variants"] if FAMILY.get(v["theme"], "rain") == family]
+    if not options:
+        options = [{"theme": family, "thunder": False}]
+    done = [h for h in history if FAMILY.get(h.get("theme"), "rain") == family and not h.get("black")]
+    print(f"Équilibre des ambiances : {counts} → {family}", flush=True)
+    return options[len(done) % len(options)]
+
+
 def step(msg: str, t0: list) -> None:
     now = time.time()
     print(f"[{now - t0[0]:6.0f} s] {msg}", flush=True)
@@ -56,8 +76,7 @@ def main() -> None:
         if len(done) >= int(cfg.get("max_per_day", 3)):
             print(f"::notice::Déjà {len(done)} publications aujourd'hui (plafond {cfg.get('max_per_day', 3)}) : rien de publié.")
             return
-    rotation = [h for h in history if not h.get("black")]  # les écrans noirs ne décalent pas la rotation
-    variant = cfg["variants"][len(rotation) % len(cfg["variants"])]
+    variant = pick_variant(cfg, history)
     if args.theme:
         if args.theme not in cfg["themes"] or args.theme == "thunder_sound":
             raise SystemExit(f"Ambiance inconnue : {args.theme}")
