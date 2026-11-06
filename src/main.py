@@ -28,7 +28,7 @@ def load_history() -> list:
     return []
 
 
-FAMILY = {"fireplace": "fireplace", "ocean": "ocean", "waterfall": "waterfall"}  # toutes les autres ambiances = « rain »
+FAMILY = {"fireplace": "fireplace", "ocean": "ocean", "waterfall": "waterfall", "binaural": "binaural"}  # toutes les autres ambiances = « rain »
 
 
 def pick_variant(cfg: dict, history: list) -> dict:
@@ -36,10 +36,10 @@ def pick_variant(cfg: dict, history: list) -> dict:
     d'ambiances (pluie / feu / océan) qui a le moins de vidéos sur la chaîne, écrans noirs
     compris. En cas d'égalité : océan, puis feu, puis pluie. Dans une famille, les
     variantes de config.yaml tournent dans l'ordre."""
-    counts = {"ocean": 0, "fireplace": 0, "waterfall": 0, "rain": 0}
+    counts = {"ocean": 0, "fireplace": 0, "waterfall": 0, "binaural": 0, "rain": 0}
     for h in history:
         counts[FAMILY.get(h.get("theme"), "rain")] += 1
-    family = min(("ocean", "fireplace", "waterfall", "rain"), key=lambda f: counts[f])
+    family = min(("ocean", "fireplace", "waterfall", "binaural", "rain"), key=lambda f: counts[f])
     options = [v for v in cfg["variants"] if FAMILY.get(v["theme"], "rain") == family]
     if not options:
         options = [{"theme": family, "thunder": False}]
@@ -61,6 +61,7 @@ def main() -> None:
     ap.add_argument("--theme", default=None, help="force une ambiance (ex. fireplace)")
     ap.add_argument("--thunder", action="store_true", help="avec --theme : ajoute du tonnerre lointain")
     ap.add_argument("--black", action="store_true", help="version écran noir (son seul, image noire)")
+    ap.add_argument("--beat", type=float, default=None, help="binaural : battement en Hz (10 alpha, 6 thêta, 2.5 delta)")
     ap.add_argument("--force", action="store_true", help="ignore le plafond quotidien (exceptionnel)")
     args = ap.parse_args()
 
@@ -82,11 +83,14 @@ def main() -> None:
         if args.theme not in cfg["themes"] or args.theme == "thunder_sound":
             raise SystemExit(f"Ambiance inconnue : {args.theme}")
         variant = {"theme": args.theme, "thunder": args.thunder}
+        if args.theme == "binaural":
+            variant["beat"] = args.beat or 10
     black = args.black
     if black and any(h.get("black") and h.get("theme") == variant["theme"] for h in history):
         # règle du propriétaire (06/11) : un seul écran noir par ambiance
         raise SystemExit(f"Un écran noir existe déjà pour l'ambiance « {variant['theme']} » : publication annulée.")
     theme, thunder = variant["theme"], bool(variant["thunder"])
+    beat = float(variant.get("beat", 10)) if theme == "binaural" else None
     seed = int(time.time()) % 1_000_000
     rng = random.Random(seed)
     t0 = [time.time()]
@@ -99,7 +103,7 @@ def main() -> None:
     out = Path(args.out)
     assets = out / "assets"
     assets.mkdir(parents=True, exist_ok=True)
-    step(f"Ambiance « {theme} », tonnerre={thunder}, écran noir={black}, {hours:g} h, graine {seed}", t0)
+    step(f"Ambiance « {theme} », battement={beat}, tonnerre={thunder}, écran noir={black}, {hours:g} h, graine {seed}", t0)
 
     # 1. Médias réels
     tcfg = cfg["themes"][theme]
@@ -134,16 +138,17 @@ def main() -> None:
 
     # 3. Son : mixage des enregistrements réels
     audio = str(out / "audio.m4a")
-    soundscape.mix([s["path"] for s in sounds], [s["path"] for s in thunders], seconds, audio, seed)
+    soundscape.mix([s["path"] for s in sounds], [s["path"] for s in thunders], seconds, audio, seed,
+                   beat=beat, carrier=float(tcfg.get("carrier_hz", 200)), bed_gain=float(tcfg.get("bed_gain", 1.0)))
     step("Paysage sonore mixé", t0)
 
     # 4. Miniature + textes
     if not black:
         frame = footage.frame(segment, rng.uniform(5, max(6, loop_len - 5)), str(out / "frame.png"))
-    meta = metadata.build(theme, thunder, hours, seed, clips, sounds + thunders, black=black)
+    meta = metadata.build(theme, thunder, hours, seed, clips, sounds + thunders, black=black, beat=beat)
     playlist_for_theme = tcfg["playlist"] if "playlist" in tcfg else cfg.get("playlist_id")
     meta["description"] = metadata.add_links(meta["description"], theme, playlist_for_theme)
-    meta["localizations"] = {"ar": metadata.arabic(theme, thunder, hours, black, playlist_for_theme)}
+    meta["localizations"] = {"ar": metadata.arabic(theme, thunder, hours, black, playlist_for_theme, beat=beat)}
     meta["clips"] = [{"id": c["id"], "page": c.get("page", "")} for c in clips]
     thumb = str(out / "thumb.jpg")
     visual.thumbnail(frame, meta["thumb_line1"], meta["thumb_line2"], thumb)
@@ -179,6 +184,7 @@ def main() -> None:
         "theme": theme,
         "thunder": thunder,
         "black": black,
+        "beat": beat,
         "clip_ids": [c["id"] for c in clips],
         "sound_ids": [s["id"] for s in sounds],
     }

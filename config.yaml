@@ -31,6 +31,9 @@ variants:
   - { theme: fireplace, thunder: false }
   - { theme: forest,    thunder: true }
   - { theme: waterfall, thunder: false }
+  - { theme: binaural,  thunder: false, beat: 10 }    # alpha : détente, anxiété, stress
+  - { theme: binaural,  thunder: false, beat: 6 }     # thêta : relaxation profonde, méditation
+  - { theme: binaural,  thunder: false, beat: 2.5 }   # delta : sommeil profond
 
 themes:
   window:
@@ -60,4 +63,11 @@ themes:
     sound: ["waterfall", "waterfall close", "waterfall stream"]
     fallback_sound: "waterfall"
     playlist: "PLATawPPrs5qU"  # playlist « Waterfall Sounds for Sleeping »
+  binaural:               # fréquences « binaural beats » (ajoutées le 06/11) : casque obligatoire
+    video: ["calm lake sunset", "clouds sky sunset", "starry night sky", "mountain lake reflection", "calm sea sunset"]
+    sound: ["gentle ocean waves", "calm sea waves", "soft rain", "gentle stream"]   # fond nature réel, discret
+    fallback_sound: "ocean waves"
+    carrier_hz: 200
+    bed_gain: 0.55
+    playlist: "PLCiVOej35SE4"  # playlist « Binaural Beats for Anxiety & Stress Relief – Calming Frequencies »
   thunder_sound: ["distant thunder", "thunder rumble"]

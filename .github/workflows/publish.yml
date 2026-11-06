@@ -18,7 +18,7 @@ on:
         type: string
         default: ""
       theme:
-        description: "Forcer une ambiance (vide = rotation) : window, forest, lake, roof, fireplace"
+        description: "Forcer une ambiance (vide = rotation) : window, forest, lake, roof, fireplace, ocean, waterfall, binaural"
         type: string
         default: ""
       thunder:
@@ -29,6 +29,10 @@ on:
         description: "Version écran noir (son seul)"
         type: boolean
         default: false
+      beat:
+        description: "binaural : battement en Hz (10 alpha, 6 thêta, 2.5 delta)"
+        type: string
+        default: ""
       force:
         description: "Ignorer exceptionnellement le plafond de 3 publications/jour"
         type: boolean
@@ -197,6 +201,7 @@ jobs:
           [ -n "${{ inputs.theme }}" ] && ARGS="$ARGS --theme ${{ inputs.theme }}"
           [ "${{ inputs.thunder }}" = "true" ] && ARGS="$ARGS --thunder"
           [ "${{ inputs.black }}" = "true" ] && ARGS="$ARGS --black"
+          [ -n "${{ inputs.beat }}" ] && ARGS="$ARGS --beat ${{ inputs.beat }}"
           [ "${{ inputs.force }}" = "true" ] && ARGS="$ARGS --force"
           python -m src.main $ARGS
 

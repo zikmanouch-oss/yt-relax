@@ -109,7 +109,24 @@ def _render_event(ev: Event, src: np.ndarray, t0: int, t1: int, out: np.ndarray,
     out[a - t0:b - t0] += seg
 
 
-def mix(bed_paths: list[str], thunder_paths: list[str], seconds: int, out_path: str, seed: int) -> None:
+def _tones(idx: np.ndarray, total: int, beat: float, carrier: float, breathe) -> np.ndarray:
+    """Battement binaural : porteuse « carrier » à gauche, « carrier + beat » à droite,
+    plus une quinte douce une octave plus bas (même battement) pour un son moins sec.
+    La phase est calculée à partir du temps absolu : aucune coupure entre deux blocs."""
+    t = idx.astype(np.float64) / SR
+    left = 0.75 * np.sin(2 * np.pi * carrier * t) + 0.25 * np.sin(2 * np.pi * carrier * 0.75 * t)
+    right = (0.75 * np.sin(2 * np.pi * (carrier + beat) * t)
+             + 0.25 * np.sin(2 * np.pi * (carrier * 0.75 + beat) * t))
+    amp = TONE_LEVEL * breathe(idx) * np.clip(idx / (20 * SR), 0, 1)   # entrée en douceur (20 s)
+    return np.stack([left * amp, right * amp], axis=1).astype(np.float32)
+
+
+TONE_LEVEL = 0.07        # niveau des battements binauraux (le fond nature passe dessous)
+
+
+def mix(bed_paths: list[str], thunder_paths: list[str], seconds: int, out_path: str, seed: int,
+        beat: float | None = None, carrier: float = 200.0, bed_gain: float = 1.0) -> None:
+    """Si « beat » est donné : ajoute un battement binaural (Hz) sur le fond sonore réel."""
     rng = random.Random(seed)
     beds = [_normalize(decode(p), 0.1) for p in bed_paths]
     beds = [b for b in beds if len(b) > 100 * SR]
@@ -125,6 +142,7 @@ def mix(bed_paths: list[str], thunder_paths: list[str], seconds: int, out_path: 
     thunder_ev = _thunder_events(total, thunders, rng)
     env_a = _envelope(total, rng, 0.45, 1.0)
     env_b = _envelope(total, rng, 0.45, 1.0)
+    breathe = _envelope(total, rng, 0.8, 1.0, (240, 600))
 
     enc = subprocess.Popen(
         ["ffmpeg", "-y", "-v", "error", "-f", "s16le", "-ar", str(SR), "-ac", "2", "-i", "-",
@@ -139,7 +157,9 @@ def mix(bed_paths: list[str], thunder_paths: list[str], seconds: int, out_path: 
             _render_event(ev, beds[ev.src], t0, t1, buf_a, False)
         for ev in voices[1]:
             _render_event(ev, beds[ev.src], t0, t1, buf_b, False)
-        out = buf_a * env_a(idx)[:, None] + buf_b * env_b(idx)[:, None]
+        out = (buf_a * env_a(idx)[:, None] + buf_b * env_b(idx)[:, None]) * bed_gain
+        if beat:
+            out += _tones(idx, total, beat, carrier, breathe)
         for ev in thunder_ev:
             _render_event(ev, thunders[ev.src], t0, t1, out, True)
         # fondu d'ouverture (5 s) et de fin (10 s)
