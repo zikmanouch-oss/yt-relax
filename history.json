@@ -173,5 +173,26 @@
       553229,
       817640
     ]
+  },
+  {
+    "date": "2026-11-06T09:30:19+00:00",
+    "video_id": "cxaP9YYGvGM",
+    "title": "Rain on a Lake Sounds for Sleeping – Black Screen, 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 955987,
+    "theme": "lake",
+    "thunder": false,
+    "black": true,
+    "clip_ids": [
+      343788,
+      343780
+    ],
+    "sound_ids": [
+      833924,
+      736845,
+      521772,
+      158689,
+      796529
+    ]
   }
 ]
