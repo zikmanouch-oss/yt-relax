@@ -152,5 +152,26 @@
       615011,
       673947
     ]
+  },
+  {
+    "date": "2026-11-06T09:06:24+00:00",
+    "video_id": "nXY_Hbg5ueY",
+    "title": "Rain on Roof Sounds for Sleeping – Black Screen, 8 Hours & Distant Thunder (2026)",
+    "hours": 8.0,
+    "seed": 953938,
+    "theme": "roof",
+    "thunder": true,
+    "black": true,
+    "clip_ids": [
+      380893,
+      128606
+    ],
+    "sound_ids": [
+      796529,
+      369547,
+      736845,
+      553229,
+      817640
+    ]
   }
 ]
