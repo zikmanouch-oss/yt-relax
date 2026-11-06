@@ -37,5 +37,8 @@ for v in yt.videos().list(part="snippet", id=",".join(ids)).execute().get("items
     sn["description"] = new_desc
     body = {"id": v["id"], "snippet": {k: sn[k] for k in ("title", "description", "categoryId", "tags",
                                                          "defaultLanguage", "defaultAudioLanguage") if k in sn}}
-    yt.videos().update(part="snippet", body=body).execute()
-    print("liens ajoutés :", v["id"], sn["title"])
+    try:
+        yt.videos().update(part="snippet", body=body).execute()
+        print("liens ajoutés :", v["id"], sn["title"])
+    except Exception as e:  # ex. langue audio « zxx » refusée par l'API : on n'écrase rien
+        print("ÉCHEC :", v["id"], sn.get("defaultAudioLanguage"), len(new_desc), str(e)[:200])
