@@ -36,7 +36,7 @@ on:
       task:
         description: "Tâche"
         type: choice
-        options: [video, branding, status, playlist_add, playlist_create, noads, links, arabic, fixlang]
+        options: [video, branding, status, playlist_add, playlist_create, extra_backfill, noads, links, arabic, fixlang]
         default: video
       queries:
         description: "branding : recherches séparées par ; — playlist_add : « VIDEO_ID PLAYLIST_ID »"
@@ -69,7 +69,7 @@ jobs:
           git push
 
   status:
-    if: inputs.task == 'status' || inputs.task == 'playlist_add' || inputs.task == 'noads' || inputs.task == 'links' || inputs.task == 'arabic' || inputs.task == 'fixlang' || inputs.task == 'playlist_create'
+    if: inputs.task == 'status' || inputs.task == 'playlist_add' || inputs.task == 'noads' || inputs.task == 'links' || inputs.task == 'arabic' || inputs.task == 'fixlang' || inputs.task == 'playlist_create' || inputs.task == 'extra_backfill'
     runs-on: ubuntu-latest
     env:
       YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
@@ -98,6 +98,11 @@ jobs:
       - name: Ajouter « No mid-roll ads » aux descriptions existantes
         if: inputs.task == 'noads'
         run: python scripts/add_noads_line.py
+      - name: Remplir les playlists supplémentaires
+        if: inputs.task == 'extra_backfill'
+        run: |
+          pip install -q PyYAML
+          python scripts/backfill_extra_playlists.py
       - name: Créer une playlist
         if: inputs.task == 'playlist_create'
         env:
