@@ -303,5 +303,27 @@
       699225,
       705548
     ]
+  },
+  {
+    "date": "2026-11-07T09:04:49+00:00",
+    "video_id": "pqmunpf-tVI",
+    "title": "Fireplace Sounds for Sleeping – Black Screen, 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 40285,
+    "theme": "fireplace",
+    "thunder": false,
+    "black": true,
+    "beat": null,
+    "clip_ids": [
+      8625,
+      150540
+    ],
+    "sound_ids": [
+      219272,
+      729396,
+      662891,
+      623368,
+      734248
+    ]
   }
 ]
