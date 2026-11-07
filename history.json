@@ -325,5 +325,27 @@
       623368,
       734248
     ]
+  },
+  {
+    "date": "2026-11-07T09:25:00+00:00",
+    "video_id": "B7nk3mwgIe8",
+    "title": "Ocean Waves Sounds for Sleeping – Black Screen, 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 42436,
+    "theme": "ocean",
+    "thunder": false,
+    "black": true,
+    "beat": null,
+    "clip_ids": [
+      138588,
+      208635
+    ],
+    "sound_ids": [
+      583836,
+      838025,
+      490340,
+      706468,
+      428087
+    ]
   }
 ]
