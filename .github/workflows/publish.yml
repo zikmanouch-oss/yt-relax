@@ -23,7 +23,7 @@ on:
         type: string
         default: ""
       theme:
-        description: "Forcer une ambiance (vide = rotation) : window, forest, lake, roof, fireplace, ocean, waterfall, binaural"
+        description: "Forcer une ambiance (vide = rotation) : window, forest, lake, roof, fireplace, ocean, waterfall, binaural, frequency"
         type: string
         default: ""
       thunder:
@@ -35,7 +35,7 @@ on:
         type: boolean
         default: false
       beat:
-        description: "binaural : battement en Hz (10 alpha, 6 thêta, 2.5 delta)"
+        description: "binaural : battement en Hz (10, 6, 2.5) — frequency : fréquence de la musique (432, 528, 396)"
         type: string
         default: ""
       force:
@@ -219,7 +219,9 @@ jobs:
           [ -n "${{ inputs.theme }}" ] && ARGS="$ARGS --theme ${{ inputs.theme }}"
           [ "${{ inputs.thunder }}" = "true" ] && ARGS="$ARGS --thunder"
           [ "${{ inputs.black }}" = "true" ] && ARGS="$ARGS --black"
-          [ -n "${{ inputs.beat }}" ] && ARGS="$ARGS --beat ${{ inputs.beat }}"
+          if [ -n "${{ inputs.beat }}" ]; then
+            if [ "${{ inputs.theme }}" = "frequency" ]; then ARGS="$ARGS --hz ${{ inputs.beat }}"; else ARGS="$ARGS --beat ${{ inputs.beat }}"; fi
+          fi
           [ "${{ inputs.force }}" = "true" ] && ARGS="$ARGS --force"
           python -m src.main $ARGS
 

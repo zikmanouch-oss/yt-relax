@@ -16,7 +16,7 @@ from pathlib import Path
 
 import yaml
 
-from . import footage, metadata, soundscape, sources, visual
+from . import footage, metadata, soundscape, sources, tonal, visual
 
 ROOT = Path(__file__).resolve().parent.parent
 HISTORY = ROOT / "history.json"
@@ -28,7 +28,7 @@ def load_history() -> list:
     return []
 
 
-FAMILY = {"fireplace": "fireplace", "ocean": "ocean", "waterfall": "waterfall", "binaural": "binaural"}  # toutes les autres ambiances = « rain »
+FAMILY = {"fireplace": "fireplace", "ocean": "ocean", "waterfall": "waterfall", "binaural": "binaural", "frequency": "binaural"}  # toutes les autres ambiances = « rain »
 
 
 def pick_variant(cfg: dict, history: list) -> dict:
@@ -61,6 +61,7 @@ def main() -> None:
     ap.add_argument("--theme", default=None, help="force une ambiance (ex. fireplace)")
     ap.add_argument("--thunder", action="store_true", help="avec --theme : ajoute du tonnerre lointain")
     ap.add_argument("--black", action="store_true", help="version écran noir (son seul, image noire)")
+    ap.add_argument("--hz", type=float, default=None, help="frequency : fréquence de référence (432, 528, 396)")
     ap.add_argument("--beat", type=float, default=None, help="binaural : battement en Hz (10 alpha, 6 thêta, 2.5 delta)")
     ap.add_argument("--force", action="store_true", help="ignore le plafond quotidien (exceptionnel)")
     args = ap.parse_args()
@@ -85,12 +86,15 @@ def main() -> None:
         variant = {"theme": args.theme, "thunder": args.thunder}
         if args.theme == "binaural":
             variant["beat"] = args.beat or 10
+        if args.theme == "frequency":
+            variant["hz"] = args.hz or 432
     black = args.black
     if black and any(h.get("black") and h.get("theme") == variant["theme"] for h in history):
         # règle du propriétaire (06/11) : un seul écran noir par ambiance
         raise SystemExit(f"Un écran noir existe déjà pour l'ambiance « {variant['theme']} » : publication annulée.")
     theme, thunder = variant["theme"], bool(variant["thunder"])
     beat = float(variant.get("beat", 10)) if theme == "binaural" else None
+    hz = float(variant.get("hz", 432)) if theme == "frequency" else None
     seed = int(time.time()) % 1_000_000
     rng = random.Random(seed)
     t0 = [time.time()]
@@ -105,7 +109,7 @@ def main() -> None:
     assets.mkdir(parents=True, exist_ok=True)
     # pour l'alerte d'échec : ambiance choisie, lisible par le workflow
     (out / "choice.txt").write_text(
-        theme + (f" {beat:g} Hz" if beat else "") + (" + orage" if thunder else "") + (" écran noir" if black else ""),
+        theme + (f" {beat:g} Hz" if beat else "") + (f" {hz:g} Hz" if hz else "") + (" + orage" if thunder else "") + (" écran noir" if black else ""),
         encoding="utf-8")
     step(f"Ambiance « {theme} », battement={beat}, tonnerre={thunder}, écran noir={black}, {hours:g} h, graine {seed}", t0)
 
@@ -120,9 +124,10 @@ def main() -> None:
                                      avoid_clips | {c["id"] for c in clips}, blocked)
     if len(clips) < (1 if black else 3):
         raise SystemExit("Pas assez de clips vidéo exploitables.")
-    sounds = sources.freesound_sounds(rng.choice(tcfg["sound"]), int(cfg.get("sounds_per_video", 5)),
-                                      assets, rng, avoid=avoid_sounds)
-    if len(sounds) < 3:
+    tonal_mode = tcfg.get("mode") == "tonal"
+    sounds = [] if tonal_mode else sources.freesound_sounds(
+        rng.choice(tcfg["sound"]), int(cfg.get("sounds_per_video", 5)), assets, rng, avoid=avoid_sounds)
+    if not tonal_mode and len(sounds) < 3:
         sounds += sources.freesound_sounds(tcfg.get("fallback_sound", "rain"), 5 - len(sounds), assets, rng,
                                            avoid=avoid_sounds | {s["id"] for s in sounds})
     thunders = []
@@ -142,17 +147,21 @@ def main() -> None:
 
     # 3. Son : mixage des enregistrements réels
     audio = str(out / "audio.m4a")
-    soundscape.mix([s["path"] for s in sounds], [s["path"] for s in thunders], seconds, audio, seed,
-                   beat=beat, carrier=float(tcfg.get("carrier_hz", 200)), bed_gain=float(tcfg.get("bed_gain", 1.0)))
+    if tonal_mode:
+        tonal.render(seconds, audio, seed, f0=hz, beat=float(tcfg.get("binaural_beat", 6)))
+    else:
+        soundscape.mix([s["path"] for s in sounds], [s["path"] for s in thunders], seconds, audio, seed,
+                       beat=beat, carrier=float(tcfg.get("carrier_hz", 200)),
+                       bed_gain=float(tcfg.get("bed_gain", 1.0)))
     step("Paysage sonore mixé", t0)
 
     # 4. Miniature + textes
     if not black:
         frame = footage.frame(segment, rng.uniform(5, max(6, loop_len - 5)), str(out / "frame.png"))
-    meta = metadata.build(theme, thunder, hours, seed, clips, sounds + thunders, black=black, beat=beat)
+    meta = metadata.build(theme, thunder, hours, seed, clips, sounds + thunders, black=black, beat=beat, hz=hz)
     playlist_for_theme = tcfg["playlist"] if "playlist" in tcfg else cfg.get("playlist_id")
     meta["description"] = metadata.add_links(meta["description"], theme, playlist_for_theme)
-    meta["localizations"] = {"ar": metadata.arabic(theme, thunder, hours, black, playlist_for_theme, beat=beat)}
+    meta["localizations"] = {"ar": metadata.arabic(theme, thunder, hours, black, playlist_for_theme, beat=beat, hz=hz)}
     meta["clips"] = [{"id": c["id"], "page": c.get("page", "")} for c in clips]
     thumb = str(out / "thumb.jpg")
     visual.thumbnail(frame, meta["thumb_line1"], meta["thumb_line2"], thumb)
@@ -189,6 +198,7 @@ def main() -> None:
         "thunder": thunder,
         "black": black,
         "beat": beat,
+        "hz": hz,
         "clip_ids": [c["id"] for c in clips],
         "sound_ids": [s["id"] for s in sounds],
     }

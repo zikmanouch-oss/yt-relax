@@ -35,7 +35,7 @@ for v in yt.videos().list(part="snippet,localizations", id=",".join(ids)).execut
     black = bool(e.get("black")) or "Black Screen" in sn["title"]
     year = datetime.fromisoformat(e["date"]).year
     loc = dict(v.get("localizations") or {})
-    loc["ar"] = metadata.arabic(theme, bool(e.get("thunder")), float(e.get("hours", 8)), black, pl, year, beat=e.get("beat"))
+    loc["ar"] = metadata.arabic(theme, bool(e.get("thunder")), float(e.get("hours", 8)), black, pl, year, beat=e.get("beat"), hz=e.get("hz"))
     if not sn.get("defaultLanguage"):
         print("ignorée (pas de langue par défaut) :", v["id"], sn["title"])
         continue

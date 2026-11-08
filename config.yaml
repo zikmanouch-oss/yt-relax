@@ -31,9 +31,9 @@ variants:
   - { theme: fireplace, thunder: false }
   - { theme: forest,    thunder: true }
   - { theme: waterfall, thunder: false }
-  - { theme: binaural,  thunder: false, beat: 10 }    # alpha : détente, anxiété, stress
-  - { theme: binaural,  thunder: false, beat: 6 }     # thêta : relaxation profonde, méditation
-  - { theme: binaural,  thunder: false, beat: 2.5 }   # delta : sommeil profond
+  - { theme: frequency, thunder: false, hz: 432 }    # musique de fréquences (08/11) : 432 Hz
+  - { theme: frequency, thunder: false, hz: 528 }
+  - { theme: frequency, thunder: false, hz: 396 }
 
 themes:
   window:
@@ -70,4 +70,9 @@ themes:
     carrier_hz: 200
     bed_gain: 0.55
     playlist: "PLCiVOej35SE4"  # playlist « Binaural Beats for Anxiety & Stress Relief – Calming Frequencies »
+  frequency:              # musique de fréquences synthétisée (validée par le propriétaire le 08/11)
+    mode: tonal            # aucun son de nature : musique calculée par src/tonal.py
+    video: ["starry night sky", "night sky timelapse", "aurora borealis", "clouds timelapse sunset", "milky way"]
+    binaural_beat: 6       # léger battement binaural sous la musique (Hz)
+    playlist: "PLCiVOej35SE4"  # même playlist que binaural (fréquences / anxiété)
   thunder_sound: ["distant thunder", "thunder rumble"]

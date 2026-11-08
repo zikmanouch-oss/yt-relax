@@ -27,7 +27,7 @@ import numpy as np
 
 SR = 44100
 CHUNK_S = 20
-BEAT = 60 / 52           # durée d'un temps (s)
+BEAT = 60 / 44           # durée d'un temps (s) : tempo lent, notes espacées
 BAR = 4 * BEAT
 
 # Gamme majeure en intonation juste, rapports au « la » de référence (f0 = degré I).
@@ -45,8 +45,8 @@ PROGRESSIONS = [
 ]
 CHORD_TONES = {"I": [I, III, V], "vi": [VI, I, III], "IV": [IV, VI, I], "V": [V, VII, II], "ii": [II, IV, VI]}
 MELODY = [V / 2, VI / 2, I, II, III, V, VI, 2 * I, 2 * II]   # pentatonique, de 0,75 f0 à 2,25 f0
-RHYTHMS = [  # rythmes d'un motif de 2 mesures (en temps, total 8)
-    [1, 1, 2, 2, 2], [2, 1, 1, 4], [1.5, 0.5, 2, 4], [1, 1, 1, 1, 4], [2, 2, 1, 1, 2], [3, 1, 4],
+RHYTHMS = [  # rythmes d'un motif de 2 mesures (en temps, total 8) : peu de notes, bien espacées
+    [2, 2, 4], [3, 1, 4], [2, 6], [4, 4], [2, 2, 2, 2], [1, 3, 4],
 ]
 
 
@@ -95,11 +95,9 @@ def _plan(seconds: float, rng: random.Random) -> tuple[list[Chord], list[Note]]:
             tones = CHORD_TONES[name]
             # arpège doux au début de chaque mesure
             _, _, arp = CHORDS[name]
-            for bar in range(2):
-                b0 = t + bar * BAR
-                order = arp if (k + bar) % 2 == 0 else arp[::-1]
-                for j, r in enumerate(order):
-                    notes.append(Note(b0 + j * BEAT / 2, r, 0.45 * rng.uniform(0.85, 1), 0.3 + 0.13 * j, 3.0))
+            order = arp if k % 2 == 0 else arp[::-1]          # un arpège par accord, notes espacées
+            for j, r in enumerate(order[:3]):
+                notes.append(Note(t + j * BEAT, r, 0.4 * rng.uniform(0.85, 1), 0.3 + 0.2 * j, 3.2))
             if melody_on:
                 # motif répété (accords 1-2-3), varié sur le dernier accord
                 idx = _snap(start_idx, tones)
@@ -183,7 +181,7 @@ def _render(t: np.ndarray, f0: float, beat: float, chords: list[Chord], cstarts:
         bass, pad, _ = CHORDS[c.name]
         for j, r in enumerate(pad):
             f = f0 * r
-            a = 0.022 * env
+            a = 0.016 * env
             pad_l = a * (_sin(f, t, j) + 0.25 * _sin(f * 1.002, t, j + 1))
             pad_r = a * (_sin(f, t, j + 0.7) + 0.25 * _sin(f * 0.998, t, j + 2))
             dry[:, 0] += pad_l
@@ -204,10 +202,9 @@ def _render(t: np.ndarray, f0: float, beat: float, chords: list[Chord], cstarts:
         f = f0 * nt.freq
         local = t - nt.start
         pos = np.maximum(local, 0)
-        env = np.where(local >= 0, (1 - np.exp(-pos / 0.012)) * np.exp(-pos / nt.decay), 0.0)
-        tone = (_sin(f, pos) + 0.30 * _sin(2 * f, pos) * np.exp(-pos / 0.9)
-                + 0.10 * _sin(3 * f, pos) * np.exp(-pos / 0.45)
-                + 0.04 * _sin(4 * f, pos) * np.exp(-pos / 0.25)) * env
+        env = np.where(local >= 0, (1 - np.exp(-pos / 0.025)) * np.exp(-pos / nt.decay), 0.0)
+        tone = (_sin(f, pos) + 0.16 * _sin(2 * f, pos) * np.exp(-pos / 0.7)
+                + 0.03 * _sin(3 * f, pos) * np.exp(-pos / 0.3)) * env
         level = 0.07 if f < 500 else 0.06 if f < 800 else 0.045
         tone *= level * nt.gain
         l, r = tone * (1 - nt.pan) * 1.4, tone * nt.pan * 1.4
@@ -236,7 +233,7 @@ def render(seconds: int, out_path: str, seed: int, f0: float = 432.0, beat: floa
         dry, send = _render(t, f0, beat, chords, cstarts, notes, nstarts, seconds)
         out = 0.75 * dry + 0.55 * reverb(send)
         out *= (np.clip(t / 8, 0, 1) * np.clip((seconds - t) / 15, 0, 1))[:, None]
-        out *= 1.6   # niveau final (crête visée ≈ 0,5, sans écrêtage)
+        out *= 1.3   # niveau final (crête visée ≈ 0,4, large marge)
         enc.stdin.write(np.clip(out * 32767, -32768, 32767).astype("<i2").tobytes())
     enc.stdin.close()
     if enc.wait() != 0:
