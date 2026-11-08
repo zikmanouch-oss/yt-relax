@@ -75,7 +75,9 @@ def main() -> None:
         from zoneinfo import ZoneInfo
         pt = ZoneInfo("America/Los_Angeles")
         today = datetime.now(pt).date()
-        done = [h for h in history if datetime.fromisoformat(h["date"]).astimezone(pt).date() == today]
+        shorts_file = ROOT / "shorts.json"   # les Shorts comptent aussi dans le plafond déclaré à Google
+        shorts = json.loads(shorts_file.read_text(encoding="utf-8")) if shorts_file.exists() else []
+        done = [h for h in history + shorts if datetime.fromisoformat(h["date"]).astimezone(pt).date() == today]
         if len(done) >= int(cfg.get("max_per_day", 3)):
             print(f"::notice::Déjà {len(done)} publications aujourd'hui (plafond {cfg.get('max_per_day', 3)}) : rien de publié.")
             return

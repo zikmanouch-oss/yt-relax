@@ -5,7 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 entry = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-path = ROOT / "history.json"
+path = ROOT / (sys.argv[2] if len(sys.argv) > 2 else "history.json")   # ex. shorts.json
 history = json.loads(path.read_text(encoding="utf-8")) if path.exists() else []
 if not any(e.get("video_id") == entry["video_id"] for e in history):
     history.append(entry)
