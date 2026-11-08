@@ -347,5 +347,28 @@
       706468,
       428087
     ]
+  },
+  {
+    "date": "2026-11-08T01:14:36+00:00",
+    "video_id": "9z9sfMNW9ho",
+    "title": "432 Hz Relaxing Music to Calm Your Mind – 8 Hours of Soft Piano (2026)",
+    "hours": 8.0,
+    "seed": 96467,
+    "theme": "frequency",
+    "thunder": false,
+    "black": false,
+    "beat": null,
+    "hz": 432.0,
+    "clip_ids": [
+      12766,
+      49933,
+      91942,
+      137438,
+      171197,
+      92093,
+      100256,
+      137517
+    ],
+    "sound_ids": []
   }
 ]
