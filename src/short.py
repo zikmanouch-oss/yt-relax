@@ -130,16 +130,28 @@ def main() -> None:
     if not args.dry_run and _today_count(history + shorts) >= int(cfg.get("max_per_day", 3)):
         print("::notice::Plafond quotidien de mises en ligne atteint : pas de Short aujourd'hui.")
         return
-    done = {s["for_video"] for s in shorts}
-    longs = [h for h in history if h.get("hours", 0) >= 1]
+    per_video: dict[str, int] = {}
+    for sh in shorts:
+        per_video[sh["for_video"]] = per_video.get(sh["for_video"], 0) + 1
+    longs = [h for h in history if h.get("hours", 0) >= 1 and not h.get("black")]
+    freq = ("frequency", "binaural")
     if args.video:
         target = next(h for h in history if h["video_id"] == args.video)
     else:
-        todo = [h for h in longs if h["video_id"] not in done and not h.get("black")]
-        if not todo:
-            print("::notice::Toutes les vidéos 8 h ont déjà leur Short.")
+        # 09/11 : les Shorts de fréquences marchent le mieux → 2 Shorts sur 3 sont des fréquences,
+        # jusqu'à 3 Shorts différents par vidéo de fréquences (1 seul pour les autres ambiances)
+        def todo(themes_freq: bool) -> list:
+            limit = 3 if themes_freq else 1
+            c = [h for h in longs if (h["theme"] in freq) == themes_freq and per_video.get(h["video_id"], 0) < limit]
+            return sorted(c, key=lambda h: (per_video.get(h["video_id"], 0), h["date"]), reverse=False)
+        want_freq = len(shorts) % 3 != 2
+        cands = todo(want_freq) or todo(not want_freq)
+        if not cands:
+            print("::notice::Toutes les vidéos 8 h ont déjà leurs Shorts.")
             return
-        target = todo[-1]   # la plus récente d'abord
+        # le moins de Shorts d'abord, puis la plus récente
+        best = min(per_video.get(h["video_id"], 0) for h in cands)
+        target = [h for h in cands if per_video.get(h["video_id"], 0) == best][-1]
     theme, hz = target["theme"], target.get("hz")
     hz_s = f"{hz:g}" if hz else ""
     tcfg = cfg["themes"][theme]

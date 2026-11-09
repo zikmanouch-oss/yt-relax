@@ -20,6 +20,10 @@ blocked_clips: []
 # Équilibrage automatique (06/11) : chaque publication prend la famille (pluie / feu / océan)
 # qui a le MOINS de vidéos sur la chaîne (écrans noirs compris) ; pas de pluie tant que
 # feu et océan n'ont pas rattrapé. Dans une famille, ses variantes ci-dessous tournent.
+# Poids par famille (09/11, demande du propriétaire) : les vidéos de fréquences (famille « binaural »)
+# marchent le mieux → elles reçoivent deux fois plus de publications que les autres familles.
+family_weight: { binaural: 2 }
+
 variants:
   - { theme: ocean,     thunder: false }
   - { theme: fireplace, thunder: false }

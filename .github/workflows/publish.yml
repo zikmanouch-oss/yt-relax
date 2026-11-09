@@ -1,6 +1,6 @@
 name: Calm Haven Sounds
 run-name: >-
-  ${{ github.event_name == 'schedule' && github.event.schedule == '41 16 * * 0,2,4' && 'Short planifié'
+  ${{ github.event_name == 'schedule' && github.event.schedule == '41 16 * * *' && 'Short planifié'
   || github.event_name == 'schedule' && 'Vidéo planifiée (ambiance choisie par équilibrage)'
   || (inputs.task != 'video' && format('Tâche {0}', inputs.task))
   || format('Vidéo {0}{1}{2}{3}', inputs.theme || 'auto', inputs.beat && format(' {0} Hz', inputs.beat) || '',
@@ -8,8 +8,8 @@ run-name: >-
 
 on:
   schedule:
-    - cron: "17 18 * * 1,3,5"   # lundi, mercredi, vendredi à 18:17 UTC : vidéo 8 h
-    - cron: "41 16 * * 0,2,4"   # dimanche, mardi, jeudi à 16:41 UTC : Short qui renvoie vers une vidéo 8 h
+    - cron: "17 18 * * *"   # tous les jours à 18:17 UTC : vidéo 8 h (depuis le 09/11 ; avant : lun/mer/ven)
+    - cron: "41 16 * * *"   # tous les jours à 16:41 UTC : Short qui renvoie vers une vidéo 8 h
   workflow_dispatch:
     inputs:
       dry_run:
@@ -139,7 +139,7 @@ jobs:
 
   publish:
     name: Vidéo ${{ inputs.theme || 'auto' }}
-    if: (inputs.task == 'video' || inputs.task == '') && github.event.schedule != '41 16 * * 0,2,4'
+    if: (inputs.task == 'video' || inputs.task == '') && github.event.schedule != '41 16 * * *'
     runs-on: ubuntu-24.04
     timeout-minutes: 340
     concurrency:
@@ -280,7 +280,7 @@ jobs:
 
   short:
     name: Short
-    if: inputs.task == 'short' || github.event.schedule == '41 16 * * 0,2,4'
+    if: inputs.task == 'short' || github.event.schedule == '41 16 * * *'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:

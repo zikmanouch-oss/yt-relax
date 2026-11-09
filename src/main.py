@@ -40,7 +40,11 @@ def pick_variant(cfg: dict, history: list) -> dict:
     counts = {"ocean": 0, "fireplace": 0, "waterfall": 0, "binaural": 0, "rain": 0}
     for h in history:
         counts[FAMILY.get(h.get("theme"), "rain")] += 1
-    family = min(("ocean", "fireplace", "waterfall", "binaural", "rain"), key=lambda f: counts[f])
+    # poids par famille (09/11) : les fréquences (famille « binaural ») marchent le mieux → poids 2
+    # = elles reçoivent deux fois plus de vidéos que les autres familles
+    weight = {**{f: 1.0 for f in counts}, **{k: float(v) for k, v in (cfg.get("family_weight") or {}).items()}}
+    order = ("binaural", "ocean", "fireplace", "waterfall", "rain")
+    family = min(order, key=lambda f: (counts[f] / weight[f], order.index(f)))
     options = [v for v in cfg["variants"] if FAMILY.get(v["theme"], "rain") == family]
     if not options:
         options = [{"theme": family, "thunder": False}]
