@@ -385,29 +385,61 @@ FREQ_TAGS = [
 ]
 
 
-def _build_frequency(hz: float, hours: float, seed: int, clips: list[dict], video_source: str, y: int) -> dict:
+FREQ_VARIANT_TITLES = {   # déclinaisons (idées validées le 09/11)
+    "rain": "{hz} Hz Soft Piano with Gentle Night Rain – {h} Hours for Deep Sleep ({y})",
+    "ocean": "{hz} Hz Piano & Ocean Waves for Deep Sleep – {h} Hours ({y})",
+    "ocean_black": "{hz} Hz Piano & Ocean Waves – Black Screen, {h} Hours for Sleep ({y})",
+    "rain_black": "{hz} Hz Piano & Night Rain – Black Screen, {h} Hours for Sleep ({y})",
+    "black": "{hz} Hz Calming Piano – Black Screen, {h} Hours for Deep Sleep ({y})",
+    "theta": "{hz} Hz Piano with Theta Binaural Beats for Deep Sleep – {h} Hours ({y})",
+}
+BED_TEXT = {"rain": ("soft rain falling at night", "🌧️ Real rain recordings, kept very soft under the music"),
+            "ocean": ("gentle ocean waves", "🌊 Real ocean wave recordings, kept very soft under the music")}
+
+
+def _build_frequency(hz: float, hours: float, seed: int, clips: list[dict], video_source: str, y: int,
+                     sounds: list[dict] | None = None, bed: str | None = None, black: bool = False,
+                     theta: bool = False) -> dict:
     rnd = random.Random(seed)
     key = min(FREQ_TITLES, key=lambda k: abs(k - hz))
     h, z = f"{hours:g}", f"{hz:g}"
-    title = rnd.choice(FREQ_TITLES[key]).format(h=h, y=y)
-    return {
-        "title": title[:100],
-        "description": FREQ_DESCRIPTION.format(hz=z, h=h, chapters=chapters(hours), video_source=video_source,
-                                               video_credits=_names(clips)),
-        "tags": FREQ_TAGS + [f"{z} hz", f"{z} hz music", f"{z} hz frequency", f"{z} hz meditation music",
-                             f"{z} hz {y}"],
-        "thumb_line1": f"{z} HZ",
-        "thumb_line2": "CALM MUSIC" + (f" • {h} HOURS" if hours >= 1 else ""),
-    }
-
+    variant = (f"{bed}_black" if bed and black else bed) or ("black" if black else None) or ("theta" if theta else None)
+    if variant:
+        title = FREQ_VARIANT_TITLES[variant].format(hz=z, h=h, y=y)
+    else:
+        title = rnd.choice(FREQ_TITLES[key]).format(h=h, y=y)
+    desc = FREQ_DESCRIPTION.format(hz=z, h=h, chapters=chapters(hours), video_source=video_source,
+                                   video_credits=_names(clips))
+    if bed:
+        scene, bullet = BED_TEXT[bed]
+        desc = desc.replace("No nature sounds, no voices, no sudden changes",
+                            f"With {scene} in the background, no voices, no sudden changes")
+        desc = desc.replace(f"🎵 Original music tuned to {z} Hz", f"🎵 Original music tuned to {z} Hz\n{bullet}")
+        desc = desc.replace("Footage: ", f"Nature sounds: Freesound (freesound.org, CC0) — {_names(sounds or [])}\nFootage: ")
+    if theta or not bed:
+        desc = desc.replace("(a very soft binaural pulse sits under the music)",
+                            "(a very soft 6 Hz theta binaural beat sits under the music)")
+    if black:
+        desc = desc.replace("🌙 ", "⬛ Black screen: no light to keep you awake, just the sound\n🌙 ", 1)
+        desc = desc.replace("Footage: ", "Thumbnail image: ")
+    tags = FREQ_TAGS + [f"{z} hz", f"{z} hz music", f"{z} hz frequency", f"{z} hz meditation music", f"{z} hz {y}"]
+    if bed:
+        tags += [f"{z} hz {bed}", f"piano and {bed} sounds", f"{bed} sounds for sleeping"]
+    if black:
+        tags += ["black screen", "black screen sleep music"]
+    if theta:
+        tags += ["theta waves", "theta binaural beats"]
+    line1 = f"{z} HZ PIANO" + {"rain": " + RAIN", "ocean": " + OCEAN"}.get(bed or "", "")
+    line2 = ("BLACK SCREEN" if black else "THETA WAVES" if theta else "CALM MUSIC") + (f" • {h} HOURS" if hours >= 1 else "")
+    return {"title": title[:100], "description": desc, "tags": tags, "thumb_line1": line1, "thumb_line2": line2}
 
 def build(theme: str, thunder: bool, hours: float, seed: int,
           clips: list[dict], sounds: list[dict], video_source: str = "Pixabay (pixabay.com)",
           year: int | None = None, black: bool = False, beat: float | None = None,
-          hz: float | None = None) -> dict:
+          hz: float | None = None, bed: str | None = None, theta: bool = False) -> dict:
     if theme == "frequency":
         y = year or _dt.datetime.now(_dt.timezone.utc).year
-        return _build_frequency(hz or 432, hours, seed, clips, video_source, y)
+        return _build_frequency(hz or 432, hours, seed, clips, video_source, y, sounds, bed, black, theta)
     if theme == "binaural":
         y = year or _dt.datetime.now(_dt.timezone.utc).year
         return _build_binaural(beat or 10, hours, seed, clips, sounds, video_source, y)
@@ -601,7 +633,8 @@ AR_FREQ = """موسيقى هادئة بتردد {z} هرتز: {hh} من بيان
 
 
 def arabic(theme: str, thunder: bool, hours: float, black: bool, playlist_id: str | None,
-           year: int | None = None, beat: float | None = None, hz: float | None = None) -> dict:
+           year: int | None = None, beat: float | None = None, hz: float | None = None,
+           bed: str | None = None, theta: bool = False) -> dict:
     y = year or _dt.datetime.now(_dt.timezone.utc).year
     hh = _ar_hours(hours)
     if theme == "frequency":
@@ -609,8 +642,19 @@ def arabic(theme: str, thunder: bool, hours: float, black: bool, playlist_id: st
         links = [f"👉 اشترك: {CHANNEL_URL}?sub_confirmation=1"]
         if playlist_id:
             links.append(f"📂 المزيد: https://www.youtube.com/playlist?list={playlist_id}")
-        title = f"موسيقى تأمل هادئة بتردد {z} هرتز للتخلص من القلق والتوتر – {hh} ({y})"
+        extra = {"rain": " مع صوت المطر ليلاً", "ocean": " مع أمواج البحر"}.get(bed or "", "")
+        extra += "، شاشة سوداء" if black else ""
+        extra += " مع نبضات ثيتا" if theta else ""
+        if extra:
+            title = f"موسيقى بيانو هادئة {z} هرتز{extra} للنوم العميق – {hh} ({y})"
+        else:
+            title = f"موسيقى تأمل هادئة بتردد {z} هرتز للتخلص من القلق والتوتر – {hh} ({y})"
         desc = AR_FREQ.format(z=z, hh=hh, chapters=_ar_chapters(hours), links="\n".join(links))
+        if bed:
+            desc = desc.replace("بدون أصوات طبيعة وبدون كلام",
+                                "مع صوت " + ("المطر" if bed == "rain" else "أمواج البحر") + " الخفيف في الخلفية، بدون كلام")
+        if black:
+            desc = desc.replace("🌙 ", "⬛ شاشة سوداء: لا ضوء يوقظك، فقط الصوت\n🌙 ", 1)
         return {"title": title[:100], "description": desc}
     if theme == "binaural":
         w, _, _ = _band(beat or 10)

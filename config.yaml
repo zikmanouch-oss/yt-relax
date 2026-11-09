@@ -32,8 +32,11 @@ variants:
   - { theme: forest,    thunder: true }
   - { theme: waterfall, thunder: false }
   - { theme: frequency, thunder: false, hz: 432 }    # musique de fréquences (08/11) : 432 Hz
-  - { theme: frequency, thunder: false, hz: 528 }
+  - { theme: frequency, thunder: false, hz: 528, bed: rain }                 # idées Studio (09/11)
+  - { theme: frequency, thunder: false, hz: 432, theta: true }
+  - { theme: frequency, thunder: false, hz: 432, bed: ocean, black: true }   # un seul écran noir « frequency »
   - { theme: frequency, thunder: false, hz: 396 }
+  - { theme: frequency, thunder: false, hz: 528 }
 
 themes:
   window:
@@ -75,4 +78,15 @@ themes:
     video: ["starry night sky", "night sky timelapse", "aurora borealis", "clouds timelapse sunset", "milky way"]
     binaural_beat: 6       # léger battement binaural sous la musique (Hz)
     playlist: "PLCiVOej35SE4"  # même playlist que binaural (fréquences / anxiété)
+    beds:                  # déclinaisons « musique + fond nature discret » (09/11)
+      rain:
+        video: ["rain window night", "raindrops window", "rain night", "rain drops glass"]
+        sound: ["rain window", "gentle rain", "rain on glass"]
+        fallback_sound: "rain"
+        level: 0.35
+      ocean:
+        video: ["ocean waves night", "sea waves moonlight", "ocean waves", "calm sea sunset"]
+        sound: ["ocean waves", "gentle sea waves", "calm sea waves"]
+        fallback_sound: "ocean"
+        level: 0.35
   thunder_sound: ["distant thunder", "thunder rumble"]

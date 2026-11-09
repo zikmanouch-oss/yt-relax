@@ -225,6 +225,9 @@ jobs:
             if [ "${{ inputs.theme }}" = "frequency" ]; then ARGS="$ARGS --hz ${{ inputs.beat }}"; else ARGS="$ARGS --beat ${{ inputs.beat }}"; fi
           fi
           [ "${{ inputs.force }}" = "true" ] && ARGS="$ARGS --force"
+          # frequency : déclinaisons passées dans « queries » (ex. « rain », « ocean », « theta »)
+          case "${{ inputs.queries }}" in *rain*) ARGS="$ARGS --bed rain";; *ocean*) ARGS="$ARGS --bed ocean";; esac
+          case "${{ inputs.queries }}" in *theta*) ARGS="$ARGS --theta";; esac
           python -m src.main $ARGS
 
       - name: Extrait léger (2 min autour du raccord de boucle)
