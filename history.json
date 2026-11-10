@@ -430,5 +430,30 @@
       796529,
       738091
     ]
+  },
+  {
+    "date": "2026-11-10T20:28:56+00:00",
+    "video_id": "DZoMn94xBhw",
+    "title": "432 Hz Piano & Ocean Waves – Black Screen, 8 Hours for Sleep (2026)",
+    "hours": 8.0,
+    "seed": 337466,
+    "theme": "frequency",
+    "thunder": false,
+    "black": true,
+    "beat": null,
+    "hz": 432.0,
+    "bed": "ocean",
+    "theta": false,
+    "clip_ids": [
+      135658,
+      348904
+    ],
+    "sound_ids": [
+      785224,
+      585623,
+      654442,
+      867645,
+      760339
+    ]
   }
 ]
