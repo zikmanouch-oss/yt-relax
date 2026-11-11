@@ -455,5 +455,30 @@
       867645,
       760339
     ]
+  },
+  {
+    "date": "2026-11-11T19:49:05+00:00",
+    "video_id": "cEIM1bavez4",
+    "title": "528 Hz Relaxing Music for Deep Sleep & Inner Peace – 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 424043,
+    "theme": "frequency",
+    "thunder": false,
+    "black": false,
+    "beat": null,
+    "hz": 528.0,
+    "bed": null,
+    "theta": false,
+    "clip_ids": [
+      49827,
+      232408,
+      99115,
+      1096,
+      375595,
+      234077,
+      375594,
+      225587
+    ],
+    "sound_ids": []
   }
 ]
