@@ -480,5 +480,36 @@
       225587
     ],
     "sound_ids": []
+  },
+  {
+    "date": "2026-11-12T19:40:36+00:00",
+    "video_id": "ZCgaFz7G5EU",
+    "title": "Relaxing Ocean Waves for Sleep, Study & Calm – 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 510381,
+    "theme": "ocean",
+    "thunder": false,
+    "black": false,
+    "beat": null,
+    "hz": null,
+    "bed": null,
+    "theta": false,
+    "clip_ids": [
+      21528,
+      42543,
+      201766,
+      232793,
+      275633,
+      31377,
+      16160,
+      131092
+    ],
+    "sound_ids": [
+      648496,
+      813228,
+      265967,
+      727834,
+      442486
+    ]
   }
 ]
