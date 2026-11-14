@@ -30,7 +30,7 @@ lines = [f"**Période : {days[max(0, len(days) - 8)]} → {days[-1]}** ({span} j
          f"| Vues | {now['views']} | {now['views'] - before['views']:+d} |",
          f"| Vidéos en ligne | {now['count']} | {now['count'] - before['count']:+d} |", ""]
 for label in ("8 h", "Short"):
-    top = sorted((v for v in now["videos"] if kind.get(v) == label), key=gain, reverse=True)[:5]
+    top = sorted((v for v in now["videos"] if kind.get(v) == label), key=lambda v: (gain(v), now["videos"][v]["views"]), reverse=True)[:5]
     lines += [f"**Top {label} de la période (vues gagnées)**", ""]
     lines += [f"- {gain(v):+d} (total {now['videos'][v]['views']}) — [{title.get(v, v)}](https://youtu.be/{v})" for v in top]
     lines.append("")
@@ -38,12 +38,13 @@ w = main.performance_weights(cfg, history, shorts)
 counts = {f: sum(1 for h in history if main.family_of(h.get("theme")) == f) for f in main.FAMILIES}
 names = {"binaural": "Fréquences", "noise": "Bruits colorés", "ocean": "Océan", "fireplace": "Feu",
          "waterfall": "Chute d'eau", "rain": "Pluie"}
-lines += ["**Ambiances (le poids décide de la fréquence de publication : 1 = normal, 3 = trois fois plus)**", "",
-          "| Ambiance | Vidéos 8 h | Vues (8 h + Shorts) | Poids |", "|---|---|---|---|"]
+low = min(w.values())
+lines += ["**Ambiances (rythme = combien de fois plus souvent qu'une ambiance au rythme de base ; calculé d'après les vues)**",
+          "", "| Ambiance | Vidéos 8 h | Vues (8 h + Shorts) | Rythme |", "|---|---|---|---|"]
 for f in main.FAMILIES:
     vids = [e["video_id"] for e in history + shorts if main.family_of(e.get("theme")) == f]
     total = sum(now["videos"].get(v, {}).get("views", 0) for v in vids)
-    lines.append(f"| {names[f]} | {counts[f]} | {total} | {w[f]:g} |")
+    lines.append(f"| {names[f]} | {counts[f]} | {total} | ×{w[f] / low:.1f} |")
 lines += ["", "Seuils du Programme Partenaire : 1 000 abonnés et 4 000 h de visionnage sur 12 mois "
           "(les heures ne sont visibles que dans YouTube Studio → Statistiques)."]
 print("\n".join(lines))
