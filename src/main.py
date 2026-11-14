@@ -17,7 +17,7 @@ from pathlib import Path
 
 import yaml
 
-from . import footage, metadata, soundscape, sources, tonal, visual
+from . import footage, metadata, noise, soundscape, sources, tonal, visual
 
 ROOT = Path(__file__).resolve().parent.parent
 HISTORY = ROOT / "history.json"
@@ -29,31 +29,94 @@ def load_history() -> list:
     return []
 
 
-FAMILY = {"fireplace": "fireplace", "ocean": "ocean", "waterfall": "waterfall", "binaural": "binaural", "frequency": "binaural"}  # toutes les autres ambiances = « rain »
+FAMILY = {"fireplace": "fireplace", "ocean": "ocean", "waterfall": "waterfall", "binaural": "binaural",
+          "frequency": "binaural", "brown_noise": "noise", "pink_noise": "noise", "green_noise": "noise",
+          "white_noise": "noise"}  # toutes les autres ambiances = « rain »
+FAMILIES = ("binaural", "noise", "ocean", "fireplace", "waterfall", "rain")
+STATS = ROOT / "stats" / "daily.json"
 
 
-def pick_variant(cfg: dict, history: list) -> dict:
-    """Équilibrage automatique (demande du propriétaire, 06/11) : on publie la famille
-    d'ambiances (pluie / feu / océan) qui a le moins de vidéos sur la chaîne, écrans noirs
-    compris. En cas d'égalité : océan, puis feu, puis pluie. Dans une famille, les
-    variantes de config.yaml tournent dans l'ordre."""
-    counts = {"ocean": 0, "fireplace": 0, "waterfall": 0, "binaural": 0, "rain": 0}
+def family_of(theme: str | None) -> str:
+    return FAMILY.get(theme, "rain")
+
+
+def performance_weights(cfg: dict, history: list, shorts: list, stats: dict | None = None,
+                        now: datetime | None = None) -> dict:
+    """Poids automatique par famille d'après les vues réelles (stats/daily.json, relevé chaque jour).
+
+    - Vidéos 8 h : vues par semaine d'ancienneté (une vidéo ancienne n'est pas avantagée).
+    - Shorts : vues totales (ils font l'essentiel de leurs vues en 48 h), comptées à 15 %
+      (beaucoup de vues courtes ; ce sont les vidéos longues qui rapportent des heures de visionnage).
+    - Peu de données = prudence : chaque moyenne est tirée vers la moyenne de la chaîne (2 vidéos
+      « fictives »), si bien qu'une famille sans chiffres vaut la moyenne et qu'un seul bon Short ne suffit pas.
+    Poids auto de 1 à 3, multiplié par le choix manuel de config.yaml (family_weight)."""
+    manual = {f: 1.0 for f in FAMILIES}
+    manual.update({k: float(v) for k, v in (cfg.get("family_weight") or {}).items() if k in manual})
+    if stats is None:
+        stats = json.loads(STATS.read_text(encoding="utf-8")) if STATS.exists() else {}
+    days = sorted(stats)
+    if not days:
+        return manual
+    views = {vid: int(v.get("views", 0)) for vid, v in stats[days[-1]].get("videos", {}).items()}
+    now = now or datetime.now(timezone.utc)
+
+    def age(entry: dict) -> float:
+        return (now - datetime.fromisoformat(entry["date"])).total_seconds() / 86400
+
+    longs = {f: [views[h["video_id"]] / max(3.0, age(h)) * 7 for h in history
+                 if family_of(h.get("theme")) == f and h.get("hours", 0) >= 1 and h["video_id"] in views]
+             for f in FAMILIES}
+    shs = {f: [views[sh["video_id"]] for sh in shorts
+               if family_of(sh.get("theme")) == f and sh["video_id"] in views and age(sh) >= 2]
+           for f in FAMILIES}
+
+    def shrunk(groups: dict) -> dict:
+        allv = [x for g in groups.values() for x in g]
+        g = sum(allv) / len(allv) if allv else 0.0
+        return {f: (sum(v) + 2 * g) / (len(v) + 2) for f, v in groups.items()}
+
+    lg, sg = shrunk(longs), shrunk(shs)
+    score = {f: lg[f] + 0.15 * sg[f] for f in FAMILIES}
+    top = max(score.values())
+    if top <= 0:
+        return manual
+    return {f: round((1 + 2 * score[f] / top) * manual[f], 2) for f in FAMILIES}
+
+
+def _variant_count(v: dict, history: list) -> int:
+    """Nombre de vidéos déjà publiées pour cette variante précise."""
+    def same(h: dict) -> bool:
+        return (h.get("theme") == v["theme"] and bool(h.get("black")) == bool(v.get("black"))
+                and bool(h.get("thunder")) == bool(v.get("thunder"))
+                and (h.get("hz") or None) == (float(v["hz"]) if v.get("hz") else None)
+                and (h.get("bed") or None) == (v.get("bed") or None)
+                and bool(h.get("theta")) == bool(v.get("theta")))
+    return sum(1 for h in history if same(h))
+
+
+def pick_variant(cfg: dict, history: list, shorts: list | None = None) -> dict:
+    """Choix de la prochaine vidéo 8 h.
+
+    - Équilibrage (06/11) : famille qui a le moins de vidéos par rapport à son poids.
+    - Poids automatique (14/11) : les familles les plus regardées reçoivent plus de vidéos.
+    - Variété (14/11) : jamais deux jours de suite la même famille (important pour l'audience et
+      pour l'examen « contenu répétitif » du Programme Partenaire).
+    Dans une famille : la variante de config.yaml la moins publiée (dans l'ordre du fichier)."""
+    counts = {f: 0 for f in FAMILIES}
     for h in history:
-        counts[FAMILY.get(h.get("theme"), "rain")] += 1
-    # poids par famille (09/11) : les fréquences (famille « binaural ») marchent le mieux → poids 2
-    # = elles reçoivent deux fois plus de vidéos que les autres familles
-    weight = {**{f: 1.0 for f in counts}, **{k: float(v) for k, v in (cfg.get("family_weight") or {}).items()}}
-    order = ("binaural", "ocean", "fireplace", "waterfall", "rain")
-    family = min(order, key=lambda f: (counts[f] / weight[f], order.index(f)))
-    options = [v for v in cfg["variants"] if FAMILY.get(v["theme"], "rain") == family]
-    if not options:
-        options = [{"theme": family, "thunder": False}]
+        counts[family_of(h.get("theme"))] += 1
+    weight = performance_weights(cfg, history, shorts or [])
+    have = {family_of(v["theme"]) for v in cfg["variants"]}
+    longs = [h for h in history if h.get("hours", 0) >= 1]
+    last = family_of(longs[-1].get("theme")) if longs else None
+    pool = [f for f in FAMILIES if f in have and f != last] or [f for f in FAMILIES if f in have]
+    family = min(pool, key=lambda f: (counts[f] / weight[f], FAMILIES.index(f)))
+    options = [v for v in cfg["variants"] if family_of(v["theme"]) == family]
     # un seul écran noir par ambiance : on retire les variantes « black » déjà faites
     options = [v for v in options if not (v.get("black") and any(
         h.get("black") and h.get("theme") == v["theme"] for h in history))] or options
-    done = [h for h in history if FAMILY.get(h.get("theme"), "rain") == family]
-    print(f"Équilibre des ambiances : {counts} → {family}", flush=True)
-    return options[len(done) % len(options)]
+    print(f"Vidéos par famille : {counts} — poids : {weight} — hier : {last} → {family}", flush=True)
+    return min(options, key=lambda v: _variant_count(v, history))
 
 
 def step(msg: str, t0: list) -> None:
@@ -80,6 +143,8 @@ def main() -> None:
     hours = args.hours if args.hours is not None else float(cfg["hours"])
     seconds = int(hours * 3600)
     history = load_history()
+    shorts_file = ROOT / "shorts.json"
+    all_shorts = json.loads(shorts_file.read_text(encoding="utf-8")) if shorts_file.exists() else []
     if not args.dry_run and not args.force:
         # plafond déclaré à Google : 3 publications par « jour de quota » (minuit heure du Pacifique)
         from zoneinfo import ZoneInfo
@@ -91,7 +156,7 @@ def main() -> None:
         if len(done) >= int(cfg.get("max_per_day", 3)):
             print(f"::notice::Déjà {len(done)} publications aujourd'hui (plafond {cfg.get('max_per_day', 3)}) : rien de publié.")
             return
-    variant = pick_variant(cfg, history)
+    variant = pick_variant(cfg, history, all_shorts)
     if args.theme:
         if args.theme not in cfg["themes"] or args.theme == "thunder_sound":
             raise SystemExit(f"Ambiance inconnue : {args.theme}")
@@ -143,9 +208,10 @@ def main() -> None:
     if len(clips) < (1 if black else 3):
         raise SystemExit("Pas assez de clips vidéo exploitables.")
     tonal_mode = tcfg.get("mode") == "tonal"
-    sounds = [] if tonal_mode and not bed else sources.freesound_sounds(
+    noise_mode = tcfg.get("mode") == "noise"       # bruit coloré synthétisé : aucun enregistrement
+    sounds = [] if noise_mode or (tonal_mode and not bed) else sources.freesound_sounds(
         rng.choice(tcfg["sound"]), int(cfg.get("sounds_per_video", 5)), assets, rng, avoid=avoid_sounds)
-    if (not tonal_mode or bed) and len(sounds) < 3:
+    if not noise_mode and (not tonal_mode or bed) and len(sounds) < 3:
         sounds += sources.freesound_sounds(tcfg.get("fallback_sound", "rain"), 5 - len(sounds), assets, rng,
                                            avoid=avoid_sounds | {s["id"] for s in sounds})
     thunders = []
@@ -176,6 +242,8 @@ def main() -> None:
         Path(nature).unlink(missing_ok=True)
     elif tonal_mode:
         tonal.render(seconds, audio, seed, f0=hz, beat=float(tcfg.get("binaural_beat", 6)))
+    elif noise_mode:
+        noise.render(seconds, audio, seed, color=tcfg["color"])
     else:
         soundscape.mix([s["path"] for s in sounds], [s["path"] for s in thunders], seconds, audio, seed,
                        beat=beat, carrier=float(tcfg.get("carrier_hz", 200)),

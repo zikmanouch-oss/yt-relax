@@ -20,8 +20,8 @@ blocked_clips: []
 # Équilibrage automatique (06/11) : chaque publication prend la famille (pluie / feu / océan)
 # qui a le MOINS de vidéos sur la chaîne (écrans noirs compris) ; pas de pluie tant que
 # feu et océan n'ont pas rattrapé. Dans une famille, ses variantes ci-dessous tournent.
-# Poids par famille (09/11, demande du propriétaire) : les vidéos de fréquences (famille « binaural »)
-# marchent le mieux → elles reçoivent deux fois plus de publications que les autres familles.
+# Poids par famille. Depuis le 14/11 le poids est AUTOMATIQUE (vues réelles, stats/daily.json) :
+# de 1 (famille la moins regardée) à 3 (la plus regardée). Les valeurs ci-dessous sont des planchers.
 family_weight: { binaural: 2 }
 
 variants:
@@ -41,6 +41,15 @@ variants:
   - { theme: frequency, thunder: false, hz: 432, bed: ocean, black: true }   # un seul écran noir « frequency »
   - { theme: frequency, thunder: false, hz: 396 }
   - { theme: frequency, thunder: false, hz: 528 }
+  # bruits colorés (14/11) : d'abord l'écran noir de chaque couleur (un seul par ambiance), puis avec images
+  - { theme: brown_noise, thunder: false, black: true }
+  - { theme: green_noise, thunder: false, black: true }
+  - { theme: pink_noise,  thunder: false, black: true }
+  - { theme: white_noise, thunder: false, black: true }
+  - { theme: brown_noise, thunder: false }
+  - { theme: green_noise, thunder: false }
+  - { theme: pink_noise,  thunder: false }
+  - { theme: white_noise, thunder: false }
 
 themes:
   window:
@@ -93,4 +102,25 @@ themes:
         sound: ["ocean waves", "gentle sea waves", "calm sea waves"]
         fallback_sound: "ocean"
         level: 0.35
+  # Bruits colorés synthétisés (src/noise.py) : aucune dépendance à Freesound.
+  brown_noise:
+    mode: noise
+    color: brown
+    video: ["starry night sky", "night sky stars", "milky way", "dark clouds night"]
+    playlist: "PLaQ99eJLzp64"   # « Brown Noise, Pink Noise & White Noise for Sleep and Focus »
+  pink_noise:
+    mode: noise
+    color: pink
+    video: ["clouds sky sunset", "calm sea sunset", "fog forest", "clouds timelapse"]
+    playlist: "PLaQ99eJLzp64"   # « Brown Noise, Pink Noise & White Noise for Sleep and Focus »
+  green_noise:
+    mode: noise
+    color: green
+    video: ["forest trees wind", "green forest", "forest fog", "mountain forest"]
+    playlist: "PLaQ99eJLzp64"   # « Brown Noise, Pink Noise & White Noise for Sleep and Focus »
+  white_noise:
+    mode: noise
+    color: white
+    video: ["snow falling", "clouds sky", "fog mountain", "calm lake fog"]
+    playlist: "PLaQ99eJLzp64"   # « Brown Noise, Pink Noise & White Noise for Sleep and Focus »
   thunder_sound: ["distant thunder", "thunder rumble"]

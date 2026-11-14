@@ -1,6 +1,7 @@
 name: Calm Haven Sounds
 run-name: >-
-  ${{ github.event_name == 'schedule' && github.event.schedule == '41 16 * * *' && 'Short planifié'
+  ${{ github.event_name == 'schedule' && github.event.schedule == '7 15 * * *' && 'Relevé des statistiques'
+  || github.event_name == 'schedule' && github.event.schedule == '41 16 * * *' && 'Short planifié'
   || github.event_name == 'schedule' && 'Vidéo planifiée (ambiance choisie par équilibrage)'
   || (inputs.task != 'video' && format('Tâche {0}', inputs.task))
   || format('Vidéo {0}{1}{2}{3}', inputs.theme || 'auto', inputs.beat && format(' {0} Hz', inputs.beat) || '',
@@ -10,6 +11,7 @@ on:
   schedule:
     - cron: "17 18 * * *"   # tous les jours à 18:17 UTC : vidéo 8 h (depuis le 09/11 ; avant : lun/mer/ven)
     - cron: "41 16 * * *"   # tous les jours à 16:41 UTC : Short qui renvoie vers une vidéo 8 h
+    - cron: "7 15 * * *"    # tous les jours à 15:07 UTC : relevé des vues (poids automatique) ; bilan le dimanche
   workflow_dispatch:
     inputs:
       dry_run:
@@ -25,7 +27,7 @@ on:
         type: string
         default: ""
       theme:
-        description: "Forcer une ambiance (vide = rotation) : window, forest, lake, roof, fireplace, ocean, waterfall, binaural, frequency"
+        description: "Forcer une ambiance (vide = rotation) : window, forest, lake, roof, fireplace, ocean, waterfall, binaural, frequency, brown_noise, pink_noise, green_noise, white_noise"
         type: string
         default: ""
       thunder:
@@ -47,7 +49,7 @@ on:
       task:
         description: "Tâche"
         type: choice
-        options: [video, short, branding, status, playlist_add, playlist_create, extra_backfill, noads, links, arabic, fixlang]
+        options: [video, short, stats, report, branding, status, playlist_add, playlist_create, extra_backfill, noads, links, arabic, fixlang]
         default: video
       queries:
         description: "branding : recherches séparées par ; — playlist_add : « VIDEO_ID PLAYLIST_ID »"
@@ -139,7 +141,7 @@ jobs:
 
   publish:
     name: Vidéo ${{ inputs.theme || 'auto' }}
-    if: (inputs.task == 'video' || inputs.task == '') && github.event.schedule != '41 16 * * *'
+    if: (inputs.task == 'video' || inputs.task == '') && github.event.schedule != '41 16 * * *' && github.event.schedule != '7 15 * * *'
     runs-on: ubuntu-24.04
     timeout-minutes: 340
     concurrency:
@@ -175,7 +177,9 @@ jobs:
 
       - name: Historique à jour (rotation des ambiances)
         if: steps.mode.outputs.mode != 'skip'
-        run: git fetch -q origin main && git checkout -q FETCH_HEAD -- history.json || echo "::warning::Historique non actualisé"
+        run: |
+          git fetch -q origin main || echo "::warning::Historique non actualisé"
+          for f in history.json shorts.json stats; do git checkout -q FETCH_HEAD -- "$f" 2>/dev/null || true; done
 
       - uses: actions/setup-python@v5
         if: steps.mode.outputs.mode != 'skip'
@@ -292,7 +296,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Historique à jour
-        run: git fetch -q origin main && git checkout -q FETCH_HEAD -- history.json && (git checkout -q FETCH_HEAD -- shorts.json 2>/dev/null || true)
+        run: |
+          git fetch -q origin main || true
+          for f in history.json shorts.json stats; do git checkout -q FETCH_HEAD -- "$f" 2>/dev/null || true; done
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -351,3 +357,41 @@ jobs:
           gh issue create --repo "$GITHUB_REPOSITORY" \
             --title "❌ Short non publié ($(date -u +'%d/%m %H:%M') UTC)" \
             --body "Journal : $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+  stats:
+    name: Statistiques
+    if: inputs.task == 'stats' || inputs.task == 'report' || github.event.schedule == '7 15 * * *'
+    runs-on: ubuntu-latest
+    env:
+      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q google-api-python-client google-auth PyYAML numpy scipy Pillow requests
+      - name: Relever les chiffres de la chaîne
+        run: |
+          python scripts/stats.py
+          cp stats/daily.json "$RUNNER_TEMP/daily.json"
+          git config user.name "yt-relax-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for i in 1 2 3 4 5; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            mkdir -p stats && cp "$RUNNER_TEMP/daily.json" stats/daily.json
+            git add stats/daily.json
+            if git diff --cached --quiet; then break; fi
+            git commit -qm "Statistiques du jour" && git push -q origin HEAD:main && break
+            sleep $((i * 5))
+          done
+      - name: Bilan de la semaine (dimanche) — envoyé par mail via une issue
+        if: inputs.task == 'report' || github.event.schedule == '7 15 * * *'
+        run: |
+          if [ "${{ inputs.task }}" != "report" ] && [ "$(date -u +%u)" != "7" ]; then exit 0; fi
+          python scripts/report.py > "$RUNNER_TEMP/bilan.md"
+          cat "$RUNNER_TEMP/bilan.md"
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "📊 Bilan de la semaine — $(date -u +'%d/%m/%Y')" --body-file "$RUNNER_TEMP/bilan.md"

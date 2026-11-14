@@ -23,24 +23,39 @@ from pathlib import Path
 import yaml
 from PIL import Image, ImageDraw
 
-from . import footage, soundscape, sources, tonal
+from . import footage, noise, soundscape, sources, tonal
 from .visual import _font
 
 ROOT = Path(__file__).resolve().parent.parent
+metadata_noise = ("brown_noise", "pink_noise", "green_noise", "white_noise")
 SHORTS = ROOT / "shorts.json"
 SECONDS = 40
 W, H = 1080, 1920
 
+# Plusieurs titres par ambiance : le Short prend le premier titre pas encore utilisé
+# (deux Shorts au titre identique se font concurrence : constaté le 12/11).
 TITLES = {
-    "window": "Rain on the Window to Fall Asleep Fast 🌧️ #shorts",
-    "forest": "Forest Rain Sounds for Deep Sleep 🌧️ #shorts",
-    "lake": "Gentle Rain on a Calm Lake for Sleep 🌧️ #shorts",
-    "roof": "Rain on a Cabin Roof for Deep Sleep 🌧️ #shorts",
-    "fireplace": "Crackling Fireplace to Fall Asleep 🔥 #shorts",
-    "ocean": "Ocean Waves Sounds for Deep Sleep 🌊 #shorts",
-    "waterfall": "Waterfall Sounds to Calm Your Mind 💧 #shorts",
-    "binaural": "Alpha Waves 10 Hz to Ease Stress 🎧 #shorts",
-    "frequency": "{hz} Hz Calming Piano for Anxiety & Sleep 🎹 #shorts",
+    "window": ["Rain on the Window to Fall Asleep Fast 🌧️ #shorts", "Raindrops on Glass: 40 Seconds of Calm 🌧️ #shorts",
+               "Cozy Rain on the Window for Sleep 🌧️ #shorts"],
+    "forest": ["Forest Rain Sounds for Deep Sleep 🌧️ #shorts", "Rain in the Forest to Relax Your Mind 🌧️ #shorts",
+               "Rain on Leaves: Instant Calm 🌧️ #shorts"],
+    "lake": ["Gentle Rain on a Calm Lake for Sleep 🌧️ #shorts", "Soft Rain on Water to Unwind 🌧️ #shorts"],
+    "roof": ["Rain on a Cabin Roof for Deep Sleep 🌧️ #shorts", "Rain on the Roof: Close Your Eyes 🌧️ #shorts"],
+    "fireplace": ["Crackling Fireplace to Fall Asleep 🔥 #shorts", "Cozy Fire Crackling Sounds to Relax 🔥 #shorts",
+                  "Warm Fireplace Ambience for a Calm Night 🔥 #shorts"],
+    "ocean": ["Ocean Waves Sounds for Deep Sleep 🌊 #shorts", "Gentle Sea Waves to Calm Your Mind 🌊 #shorts",
+              "Waves on the Shore: Breathe Slowly 🌊 #shorts"],
+    "waterfall": ["Waterfall Sounds to Calm Your Mind 💧 #shorts", "Relaxing Waterfall for Deep Sleep 💧 #shorts",
+                  "Waterfall White Noise to Unwind 💧 #shorts"],
+    "binaural": ["Alpha Waves 10 Hz to Ease Stress 🎧 #shorts", "10 Hz Binaural Beats to Unwind 🎧 #shorts",
+                 "Alpha Waves for a Calm Mind 🎧 #shorts"],
+    "frequency": ["{hz} Hz Calming Piano for Anxiety & Sleep 🎹 #shorts", "{hz} Hz Soft Piano to Quiet Your Mind 🎹 #shorts",
+                  "{hz} Hz Relaxing Music: Breathe and Let Go 🎹 #shorts", "Slow {hz} Hz Piano for Deep Sleep 🎹 #shorts",
+                  "{hz} Hz Meditation Music for a Calm Night 🎹 #shorts"],
+    "brown_noise": ["Brown Noise for Deep Sleep & Focus 🌙 #shorts", "Smooth Brown Noise to Quiet Your Mind 🌙 #shorts"],
+    "pink_noise": ["Pink Noise for Deep Sleep 🌙 #shorts", "Soft Pink Noise to Relax 🌙 #shorts"],
+    "green_noise": ["Green Noise for Sleep & Calm 🌿 #shorts", "Soothing Green Noise to Unwind 🌿 #shorts"],
+    "white_noise": ["White Noise for Sleep & Focus 🌙 #shorts", "Soft White Noise to Block Out Noise 🌙 #shorts"],
 }
 AR_TITLES = {
     "window": "صوت المطر على النافذة للنوم بسرعة 🌧️ #shorts",
@@ -52,13 +67,21 @@ AR_TITLES = {
     "waterfall": "صوت الشلال لتهدئة الأعصاب 💧 #shorts",
     "binaural": "موجات ألفا 10 هرتز لتخفيف التوتر 🎧 #shorts",
     "frequency": "موسيقى هادئة {hz} هرتز للتخلص من القلق والنوم 🎹 #shorts",
+    "brown_noise": "الضوضاء البنية للنوم العميق والتركيز 🌙 #shorts",
+    "pink_noise": "الضوضاء الوردية للنوم العميق 🌙 #shorts",
+    "green_noise": "الضوضاء الخضراء للنوم والهدوء 🌿 #shorts",
+    "white_noise": "الضوضاء البيضاء للنوم والتركيز 🌙 #shorts",
 }
 LINE1 = {"window": "RAIN ON THE WINDOW", "forest": "FOREST RAIN", "lake": "RAIN ON THE LAKE",
          "roof": "RAIN ON THE ROOF", "fireplace": "COZY FIREPLACE", "ocean": "OCEAN WAVES",
-         "waterfall": "WATERFALL", "binaural": "ALPHA WAVES 10 HZ", "frequency": "{hz} HZ CALM MUSIC"}
+         "waterfall": "WATERFALL", "binaural": "ALPHA WAVES 10 HZ", "frequency": "{hz} HZ CALM MUSIC",
+         "brown_noise": "BROWN NOISE", "pink_noise": "PINK NOISE", "green_noise": "GREEN NOISE",
+         "white_noise": "WHITE NOISE"}
 HASHTAGS = {"fireplace": "#fireplace #sleepsounds", "ocean": "#oceanwaves #sleepsounds",
             "waterfall": "#waterfallsounds #sleepsounds", "binaural": "#binauralbeats #stressrelief",
-            "frequency": "#{hz}hz #relaxingmusic"}
+            "frequency": "#{hz}hz #relaxingmusic", "brown_noise": "#brownnoise #sleepsounds",
+            "pink_noise": "#pinknoise #sleepsounds", "green_noise": "#greennoise #sleepsounds",
+            "white_noise": "#whitenoise #sleepsounds"}
 
 
 def _overlay(theme: str, hz: str, path: str) -> None:
@@ -172,7 +195,9 @@ def main() -> None:
         raise SystemExit("Aucun clip exploitable.")
 
     audio = str(out / "short_audio.m4a")
-    if tcfg.get("mode") == "tonal":
+    if tcfg.get("mode") == "noise":
+        noise.render(SECONDS, audio, seed, color=tcfg["color"])
+    elif tcfg.get("mode") == "tonal":
         tonal.render(SECONDS, audio, seed, f0=float(hz or 432), beat=float(tcfg.get("binaural_beat", 6)))
     else:
         sounds = sources.freesound_sounds(rng.choice(tcfg["sound"]), 4, assets, rng)
@@ -187,12 +212,16 @@ def main() -> None:
     print(f"Short prêt : {Path(video).stat().st_size / 1e6:.1f} Mo", flush=True)
 
     long_url = f"https://youtu.be/{target['video_id']}"
-    title = TITLES[theme].format(hz=hz_s)
+    used = {sh["title"] for sh in shorts}
+    pool = [t.format(hz=hz_s) for t in TITLES[theme]]
+    title = next((t for t in pool if t not in used), pool[len(shorts) % len(pool)])
     desc = (f"Full 8-hour version, no mid-roll ads: {long_url}\n\n"
             f"{target['title']}\n\n"
             "Real footage and sounds, no talking. Subscribe to Calm Haven Sounds for more: "
             "https://www.youtube.com/@CalmHavenSounds-z4p?sub_confirmation=1\n\n"
             + HASHTAGS.get(theme, "#rainsounds #sleepsounds").format(hz=hz_s) + " #shorts")
+    if theme in metadata_noise:
+        desc = desc.replace("Real footage and sounds, no talking.", "Real footage, steady noise, no talking.")
     if theme in ("frequency", "binaural"):
         desc = desc.replace("Real footage and sounds, no talking.", "Real footage, original calm music, no talking.")
     meta = {
