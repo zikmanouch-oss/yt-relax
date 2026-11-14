@@ -238,7 +238,7 @@ jobs:
         if: steps.mode.outputs.mode == 'test'
         run: |
           DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 out/video.mp4)
-          SEG=$(ffprobe -v error -show_entries format=duration -of csv=p=0 out/segment.mp4)
+          SEG=$(ffprobe -v error -show_entries format=duration -of csv=p=0 out/segment.mp4 2>/dev/null || echo 60)   # écran noir : pas de segment
           START=$(python3 -c "d=$DUR; s=$SEG; print(max(0, min(s - 60, d - 120)))")
           ffmpeg -v error -y -ss "$START" -i out/video.mp4 -t 120 -c:v libx264 -preset veryfast -crf 28 -vf scale=1280:-2 -c:a aac -b:a 128k out/extrait.mp4
           ls -lh out/extrait.mp4
