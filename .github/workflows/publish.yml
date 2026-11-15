@@ -335,6 +335,20 @@ jobs:
             out/short.mp4
             out/short_metadata.json
           retention-days: 3
+      - name: Exporter le Short de test vers le dépôt (réseaux sociaux)
+        if: inputs.dry_run == true && inputs.queries != ''
+        run: |
+          git config user.name "yt-relax-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdir -p "$RUNNER_TEMP/exp" && cp out/short.mp4 "$RUNNER_TEMP/exp/${{ inputs.queries }}.mp4" && cp out/short_metadata.json "$RUNNER_TEMP/exp/${{ inputs.queries }}.json"
+          for i in 1 2 3 4 5; do
+            git fetch -q origin main && git reset -q --hard origin/main
+            mkdir -p social && cp "$RUNNER_TEMP"/exp/* social/
+            git add social
+            git diff --cached --quiet && break
+            git commit -qm "Export Short ${{ inputs.queries }} pour TikTok/Instagram" && git push -q origin HEAD:main && break
+            sleep $((i * 5))
+          done
       - name: Enregistrer le Short
         if: hashFiles('out/short_entry.json') != ''
         run: |
