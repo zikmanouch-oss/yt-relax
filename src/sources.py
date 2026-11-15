@@ -47,11 +47,20 @@ def _get(url: str, **kw) -> requests.Response:
 
 
 def _download(url: str, dest: Path, headers: dict | None = None) -> Path:
-    with requests.get(url, stream=True, timeout=120, headers={**UA, **(headers or {})}) as r:
-        r.raise_for_status()
-        with open(dest, "wb") as f:
-            for chunk in r.iter_content(1 << 20):
-                f.write(chunk)
+    for attempt in range(5):
+        try:
+            with requests.get(url, stream=True, timeout=120, headers={**UA, **(headers or {})}) as r:
+                if r.status_code == 429 or r.status_code >= 500:
+                    raise requests.HTTPError(f"{r.status_code} pour {url}")
+                r.raise_for_status()
+                with open(dest, "wb") as f:
+                    for chunk in r.iter_content(1 << 20):
+                        f.write(chunk)
+            return dest
+        except requests.RequestException:
+            if attempt == 4:
+                raise
+            time.sleep(15 * (attempt + 1))   # le CDN limite le débit : on patiente
     return dest
 
 
