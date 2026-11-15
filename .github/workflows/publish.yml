@@ -344,7 +344,7 @@ jobs:
           for i in 1 2 3 4 5; do
             git fetch -q origin main && git reset -q --hard origin/main
             mkdir -p social && cp "$RUNNER_TEMP"/exp/* social/
-            git add social
+            git add -f social
             git diff --cached --quiet && break
             git commit -qm "Export Short ${{ inputs.queries }} pour TikTok/Instagram" && git push -q origin HEAD:main && break
             sleep $((i * 5))
