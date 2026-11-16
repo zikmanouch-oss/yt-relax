@@ -586,5 +586,24 @@
       10339
     ],
     "sound_ids": []
+  },
+  {
+    "date": "2026-11-16T19:16:18+00:00",
+    "video_id": "kE14T5kWDng",
+    "title": "Green Noise Black Screen – 8 Hours for Sleep, Calm & Focus (2026)",
+    "hours": 8.0,
+    "seed": 855969,
+    "theme": "green_noise",
+    "thunder": false,
+    "black": true,
+    "beat": null,
+    "hz": null,
+    "bed": null,
+    "theta": false,
+    "clip_ids": [
+      76937,
+      346395
+    ],
+    "sound_ids": []
   }
 ]
