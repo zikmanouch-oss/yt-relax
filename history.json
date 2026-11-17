@@ -605,5 +605,30 @@
       346395
     ],
     "sound_ids": []
+  },
+  {
+    "date": "2026-11-17T20:03:13+00:00",
+    "video_id": "XqRBtUfvvtk",
+    "title": "396 Hz Calming Music to Let Go of Worry & Tension – 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 942780,
+    "theme": "frequency",
+    "thunder": false,
+    "black": false,
+    "beat": null,
+    "hz": 396.0,
+    "bed": null,
+    "theta": false,
+    "clip_ids": [
+      137438,
+      23567,
+      21758,
+      368458,
+      98860,
+      2213,
+      28975,
+      45062
+    ],
+    "sound_ids": []
   }
 ]
