@@ -699,5 +699,36 @@
       2114
     ],
     "sound_ids": []
+  },
+  {
+    "date": "2026-11-21T19:38:49+00:00",
+    "video_id": "8y35tOdkK_w",
+    "title": "Fireplace Sounds for Sleeping – 8 Hours of Crackling Fire (2026)",
+    "hours": 8.0,
+    "seed": 287513,
+    "theme": "fireplace",
+    "thunder": false,
+    "black": false,
+    "beat": null,
+    "hz": null,
+    "bed": null,
+    "theta": false,
+    "clip_ids": [
+      1036,
+      34532,
+      73432,
+      13305,
+      211761,
+      200021,
+      88187,
+      140380
+    ],
+    "sound_ids": [
+      342104,
+      729396,
+      462915,
+      623368,
+      588401
+    ]
   }
 ]
