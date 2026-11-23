@@ -142,11 +142,27 @@ def pexels_clips(query: str, count: int, dest: Path, rng: random.Random,
 
 # ------------------------------------------------------------- Freesound
 
+def blocked_sounds() -> set[int]:
+    """Sons Freesound à ne plus jamais utiliser (`blocked_sounds` de config.yaml).
+    Ex. 698108 « City Beach at Night » : une chanson captée en fond a déclenché
+    une revendication Content ID sur G2vdBfBuoAk (24/11/2026)."""
+    try:
+        import yaml
+        cfg = yaml.safe_load((Path(__file__).resolve().parent.parent / "config.yaml").read_text(encoding="utf-8"))
+        return {int(i) for i in (cfg or {}).get("blocked_sounds") or []}
+    except Exception as e:  # la liste noire ne doit jamais bloquer une publication
+        print(f"blocked_sounds illisible : {e}", flush=True)
+        return set()
+
+
 def freesound_sounds(query: str, count: int, dest: Path, rng: random.Random,
                      min_dur: int = 90, avoid: set[int] = frozenset()) -> list[dict]:
     key = os.environ["FREESOUND_API_KEY"]
+    # Pas de voix, pas de musique, pas de foule ni de circulation :
+    # une prise de son en ville peut contenir une chanson diffusée sur place → Content ID.
     exclude = " ".join(f"-tag:{t}" for t in
-                       ("voice", "speech", "talking", "music", "melody", "synth", "people", "birds", "bird"))
+                       ("voice", "speech", "talking", "music", "melody", "synth", "people", "birds", "bird",
+                        "crowd", "chatter", "traffic", "radio", "song"))
     r = _get("https://freesound.org/apiv2/search/text/", params={
         "query": query,
         "filter": f'license:"Creative Commons 0" duration:[{min_dur} TO 3600] {exclude}',
@@ -155,7 +171,8 @@ def freesound_sounds(query: str, count: int, dest: Path, rng: random.Random,
         "fields": "id,name,duration,previews,username,url,avg_rating,num_ratings",
         "token": key,
     })
-    results = [s for s in r.json().get("results", []) if s.get("previews")]
+    blocked = blocked_sounds()
+    results = [s for s in r.json().get("results", []) if s.get("previews") and s["id"] not in blocked]
     fresh = [s for s in results if s["id"] not in avoid] or results
     top = fresh[:max(count * 3, 12)]
     rng.shuffle(top)
