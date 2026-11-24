@@ -786,5 +786,36 @@
       400404,
       677582
     ]
+  },
+  {
+    "date": "2026-11-24T20:27:20+00:00",
+    "video_id": "YOllTO-yiJk",
+    "title": "528 Hz Soft Piano with Gentle Night Rain – 8 Hours for Deep Sleep (2026)",
+    "hours": 8.0,
+    "seed": 547511,
+    "theme": "frequency",
+    "thunder": false,
+    "black": false,
+    "beat": null,
+    "hz": 528.0,
+    "bed": "rain",
+    "theta": false,
+    "clip_ids": [
+      125753,
+      16160,
+      154210,
+      125493,
+      11722,
+      154447,
+      106026,
+      78
+    ],
+    "sound_ids": [
+      158689,
+      827224,
+      515940,
+      574674,
+      324499
+    ]
   }
 ]
