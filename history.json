@@ -817,5 +817,30 @@
       574674,
       324499
     ]
+  },
+  {
+    "date": "2026-11-25T19:21:51+00:00",
+    "video_id": "1gf1mBtVnw4",
+    "title": "Deep Brown Noise to Quiet a Busy Mind – 8 Hours for Sleep & Study (2026)",
+    "hours": 8.0,
+    "seed": 633476,
+    "theme": "brown_noise",
+    "thunder": false,
+    "black": false,
+    "beat": null,
+    "hz": null,
+    "bed": null,
+    "theta": false,
+    "clip_ids": [
+      362806,
+      1096,
+      181014,
+      234077,
+      1099,
+      281618,
+      181897,
+      104597
+    ],
+    "sound_ids": []
   }
 ]
