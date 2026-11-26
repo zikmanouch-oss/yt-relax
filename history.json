@@ -842,5 +842,30 @@
       104597
     ],
     "sound_ids": []
+  },
+  {
+    "date": "2026-11-26T19:59:22+00:00",
+    "video_id": "IGSU5AuUTSo",
+    "title": "432 Hz Piano with Theta Binaural Beats for Deep Sleep – 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 720296,
+    "theme": "frequency",
+    "thunder": false,
+    "black": false,
+    "beat": null,
+    "hz": 432.0,
+    "bed": null,
+    "theta": true,
+    "clip_ids": [
+      58480,
+      49933,
+      22765,
+      22580,
+      137438,
+      92093,
+      24105,
+      71457
+    ],
+    "sound_ids": []
   }
 ]
