@@ -49,7 +49,7 @@ on:
       task:
         description: "Tâche"
         type: choice
-        options: [video, short, stats, report, branding, status, playlist_add, playlist_create, extra_backfill, noads, links, arabic, fixlang]
+        options: [video, short, stats, report, branding, status, playlist_add, playlist_create, extra_backfill, noads, links, arabic, fixlang, check_shorts]
         default: video
       queries:
         description: "branding : recherches séparées par ; — playlist_add : « VIDEO_ID PLAYLIST_ID »"
@@ -370,6 +370,32 @@ jobs:
         run: |
           gh issue create --repo "$GITHUB_REPOSITORY" \
             --title "❌ Short non publié ($(date -u +'%d/%m %H:%M') UTC)" \
+            --body "Journal : $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+
+  check_shorts:
+    name: Vérification des Shorts (image trop courte)
+    if: inputs.task == 'check_shorts'
+    runs-on: ubuntu-latest
+    env:
+      PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q requests
+      - name: Durée des clips Pixabay de chaque Short
+        run: |
+          python scripts/check_shorts.py > "$RUNNER_TEMP/check.md"
+          cat "$RUNNER_TEMP/check.md" >> "$GITHUB_STEP_SUMMARY"
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "🔎 Shorts à image trop courte — $(date -u +'%d/%m/%Y')" --body-file "$RUNNER_TEMP/check.md"
+      - name: Signaler l'échec (titre précis)
+        if: failure()
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "❌ Échec de la vérification des Shorts ($(date -u +'%d/%m %H:%M') UTC)" \
             --body "Journal : $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 
   stats:
