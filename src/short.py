@@ -147,6 +147,15 @@ def _today_count(entries: list, tz: str = "America/Los_Angeles") -> int:
     return sum(1 for e in entries if datetime.fromisoformat(e["date"]).astimezone(pt).date() == today)
 
 
+def _cap(cfg: dict) -> int:
+    """Plafond du jour : max_per_day_alt un jour sur deux (date du Pacifique paire), sinon max_per_day."""
+    from zoneinfo import ZoneInfo
+    day = datetime.now(ZoneInfo("America/Los_Angeles")).date()
+    if cfg.get("max_per_day_alt") and day.toordinal() % 2 == 0:
+        return int(cfg["max_per_day_alt"])
+    return int(cfg.get("max_per_day", 3))
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--video", default=None)
@@ -157,7 +166,7 @@ def main() -> None:
     cfg = yaml.safe_load((ROOT / "config.yaml").read_text(encoding="utf-8"))
     history = json.loads((ROOT / "history.json").read_text(encoding="utf-8"))
     shorts = json.loads(SHORTS.read_text(encoding="utf-8")) if SHORTS.exists() else []
-    if not args.dry_run and _today_count(history + shorts) >= int(cfg.get("max_per_day", 3)):
+    if not args.dry_run and _today_count(history + shorts) >= _cap(cfg):
         print("::notice::Plafond quotidien de mises en ligne atteint : pas de Short aujourd'hui.")
         return
     per_video: dict[str, int] = {}

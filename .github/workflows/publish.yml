@@ -1,7 +1,7 @@
 name: Calm Haven Sounds
 run-name: >-
   ${{ github.event_name == 'schedule' && github.event.schedule == '7 15 * * *' && 'Relevé des statistiques'
-  || github.event_name == 'schedule' && github.event.schedule == '41 16 * * *' && 'Short planifié'
+  || github.event_name == 'schedule' && (github.event.schedule == '41 16 * * *' || github.event.schedule == '41 22 * * *' || github.event.schedule == '41 2 * * *') && 'Short planifié'
   || github.event_name == 'schedule' && 'Vidéo planifiée (ambiance choisie par équilibrage)'
   || (inputs.task != 'video' && format('Tâche {0}', inputs.task))
   || format('Vidéo {0}{1}{2}{3}', inputs.theme || 'auto', inputs.beat && format(' {0} Hz', inputs.beat) || '',
@@ -11,6 +11,8 @@ on:
   schedule:
     - cron: "17 18 * * *"   # tous les jours à 18:17 UTC : vidéo 8 h (depuis le 09/11 ; avant : lun/mer/ven)
     - cron: "41 16 * * *"   # tous les jours à 16:41 UTC : Short qui renvoie vers une vidéo 8 h
+    - cron: "41 22 * * *"   # 2e Short du jour (depuis le 28/11)
+    - cron: "41 2 * * *"    # 3e Short, un jour sur deux seulement (plafond max_per_day_alt ; sinon sauté)
     - cron: "7 15 * * *"    # tous les jours à 15:07 UTC : relevé des vues (poids automatique) ; bilan le dimanche
   workflow_dispatch:
     inputs:
@@ -141,7 +143,7 @@ jobs:
 
   publish:
     name: Vidéo ${{ inputs.theme || 'auto' }}
-    if: (inputs.task == 'video' || inputs.task == '') && github.event.schedule != '41 16 * * *' && github.event.schedule != '7 15 * * *'
+    if: (inputs.task == 'video' || inputs.task == '') && github.event.schedule != '41 16 * * *' && github.event.schedule != '41 22 * * *' && github.event.schedule != '41 2 * * *' && github.event.schedule != '7 15 * * *'
     runs-on: ubuntu-24.04
     timeout-minutes: 340
     concurrency:
@@ -284,7 +286,7 @@ jobs:
 
   short:
     name: Short
-    if: inputs.task == 'short' || github.event.schedule == '41 16 * * *'
+    if: inputs.task == 'short' || github.event.schedule == '41 16 * * *' || github.event.schedule == '41 22 * * *' || github.event.schedule == '41 2 * * *'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:
