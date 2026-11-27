@@ -116,10 +116,17 @@ def _video(clips: list[str], overlay: str, audio: str, dest: str, rng: random.Ra
     inputs, filters = [], []
     for k, c in enumerate(clips):
         d = footage.probe_duration(c)
-        start = rng.uniform(0, max(0.0, d - seg - 0.2))
-        inputs += ["-ss", f"{start:.2f}", "-t", f"{seg:.2f}", "-i", c]
+        if d >= seg + 0.2:
+            start = rng.uniform(0, d - seg - 0.2)
+            inputs += ["-ss", f"{start:.2f}", "-t", f"{seg:.2f}", "-i", c]
+        else:
+            # Clip plus court que sa part du Short : on le boucle, sinon l'image
+            # s'arrête avant le son (bug constaté le 27/11 : 14 s d'image sur 40 s).
+            inputs += ["-stream_loop", "-1", "-t", f"{seg:.2f}", "-i", c]
+        # tpad : filet de sécurité, chaque segment fait au moins `seg` secondes
         filters.append(f"[{k}:v]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
-                       f"fps=30,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS[s{k}]")
+                       f"fps=30,format=yuv420p,settb=AVTB,setpts=PTS-STARTPTS,"
+                       f"tpad=stop_mode=clone:stop_duration={seg:.2f},trim=duration={seg:.2f}[s{k}]")
     prev, offset = "s0", 0.0
     for k in range(1, n):
         offset += seg - xf
