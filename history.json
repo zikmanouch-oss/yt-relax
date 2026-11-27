@@ -867,5 +867,36 @@
       71457
     ],
     "sound_ids": []
+  },
+  {
+    "date": "2026-11-27T19:41:04+00:00",
+    "video_id": "icI7KNiFREE",
+    "title": "Waterfall White Noise for Deep Sleep – 8 Hours (2026)",
+    "hours": 8.0,
+    "seed": 806598,
+    "theme": "waterfall",
+    "thunder": false,
+    "black": false,
+    "beat": null,
+    "hz": null,
+    "bed": null,
+    "theta": false,
+    "clip_ids": [
+      216134,
+      227657,
+      15245,
+      174860,
+      24515,
+      169249,
+      246856,
+      208970
+    ],
+    "sound_ids": [
+      486300,
+      734534,
+      574383,
+      673963,
+      872740
+    ]
   }
 ]
