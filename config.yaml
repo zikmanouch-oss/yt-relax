@@ -2,7 +2,7 @@
 
 hours: 8                 # durée de chaque vidéo (heures)
 max_per_day: 3           # plafond déclaré à Google (jour = minuit heure du Pacifique)
-# max_per_day_alt: 4     # 3e Short un jour sur deux : SUSPENDU le 28/11 en attendant l'accord de Google (demande de quota envoyée)
+max_per_day_alt: 4       # 3e Short un jour sur deux (date du Pacifique paire) : réactivé le 28/11 (demande Google en cours, 100 uploads/jour inclus par défaut)
 segment_minutes: 15      # longueur de la séquence vidéo avant qu'elle se répète
 clips_per_video: 8       # nombre de clips vidéo mélangés
 sounds_per_video: 5      # nombre d'enregistrements mélangés
